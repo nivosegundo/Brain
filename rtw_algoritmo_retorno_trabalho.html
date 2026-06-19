@@ -1,0 +1,364 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.rtw-wrap{padding:1.5rem 0;max-width:680px}
+.step-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
+.step-dot{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--color-text-secondary);background:var(--color-background-secondary);flex-shrink:0}
+.step-dot.active{background:#185FA5;color:#fff;border-color:#185FA5}
+.step-dot.done{background:#3B6D11;color:#fff;border-color:#3B6D11}
+.step-line{flex:1;height:0.5px;background:var(--color-border-tertiary);min-width:12px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem}
+.opt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.opt-btn{background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:13px;color:var(--color-text-primary);cursor:pointer;text-align:left;transition:border-color 0.15s}
+.opt-btn:hover{border-color:#185FA5;color:#185FA5}
+.opt-btn.selected{border:1.5px solid #185FA5;background:#E6F1FB;color:#0C447C}
+.opt-btn .opt-icon{font-size:18px;display:block;margin-bottom:4px;color:inherit}
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:0.06em;text-transform:uppercase;margin:1rem 0 6px}
+.domain-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.domain-row:last-child{border-bottom:none}
+.domain-name{font-size:13px;font-weight:500;color:var(--color-text-primary);min-width:140px;flex-shrink:0}
+.domain-opts{display:flex;gap:6px;flex-wrap:wrap}
+.dom-btn{font-size:12px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer;color:var(--color-text-secondary)}
+.dom-btn:hover{border-color:var(--color-border-primary)}
+.dom-btn.ok{background:#EAF3DE;border-color:#3B6D11;color:#27500A}
+.dom-btn.atencao{background:#FAEEDA;border-color:#854F0B;color:#633806}
+.dom-btn.veto{background:#FCEBEB;border-color:#A32D2D;color:#791F1F}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:500}
+.badge-ok{background:#EAF3DE;color:#27500A}
+.badge-atencao{background:#FAEEDA;color:#633806}
+.badge-veto{background:#FCEBEB;color:#791F1F}
+.badge-info{background:#E6F1FB;color:#0C447C}
+.alert{border-radius:var(--border-radius-md);padding:10px 14px;font-size:13px;margin:8px 0;display:flex;align-items:flex-start;gap:8px}
+.alert-veto{background:#FCEBEB;border-left:3px solid #A32D2D;color:#791F1F}
+.alert-warn{background:#FAEEDA;border-left:3px solid #854F0B;color:#633806}
+.alert-ok{background:#EAF3DE;border-left:3px solid #3B6D11;color:#27500A}
+.alert-info{background:#E6F1FB;border-left:3px solid #185FA5;color:#0C447C}
+.decision-box{border-radius:var(--border-radius-lg);padding:1.25rem;margin-top:1rem}
+.decision-box.pleno{background:#EAF3DE;border:0.5px solid #3B6D11}
+.decision-box.restrito{background:#FAEEDA;border:0.5px solid #854F0B}
+.decision-box.veto{background:#FCEBEB;border:0.5px solid #A32D2D}
+.decision-box.junta{background:#E6F1FB;border:0.5px solid #185FA5}
+.decision-title{font-size:16px;font-weight:500;margin-bottom:6px}
+.decision-sub{font-size:13px;margin-bottom:1rem}
+.nav-row{display:flex;gap:8px;margin-top:1rem}
+.btn-primary{background:#185FA5;color:#fff;border:none;border-radius:var(--border-radius-md);padding:9px 20px;font-size:14px;cursor:pointer;flex:1}
+.btn-primary:hover{background:#0C447C}
+.btn-secondary{background:transparent;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:9px 20px;font-size:14px;cursor:pointer}
+.btn-secondary:hover{background:var(--color-background-secondary)}
+.btn-export{background:#3B6D11;color:#fff;border:none;border-radius:var(--border-radius-md);padding:9px 20px;font-size:14px;cursor:pointer;flex:1}
+.btn-export:hover{background:#27500A}
+.progress-bar{height:3px;background:var(--color-border-tertiary);border-radius:2px;margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;background:#185FA5;border-radius:2px;transition:width 0.3s}
+.hidden{display:none}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:var(--color-text-secondary)}
+.summary-val{font-weight:500;color:var(--color-text-primary)}
+</style>
+
+<div class="rtw-wrap">
+<h2 class="sr-only">Algoritmo de Retorno ao Trabalho — ferramenta de suporte à decisão clínica ocupacional</h2>
+
+<div id="app"></div>
+</div>
+
+<script>
+const state = {
+  step: 0,
+  data: {
+    categoria: null,
+    dias: null,
+    funcaoCritica: null,
+    dominios: {},
+    vetos: [],
+    restricoes: [],
+  }
+};
+
+const categorias = [
+  {id:'msk', label:'Musculoesquelético', icon:'ti-bone', desc:'LER/DORT, ortopédico, lombalgia, fratura'},
+  {id:'sm', label:'Saúde mental', icon:'ti-brain', desc:'Depressão, ansiedade, estresse, álcool'},
+  {id:'cv', label:'Cardiovascular', icon:'ti-heart-rate-monitor', desc:'IAM, arritmia, IC, pós-hemodinâmico'},
+  {id:'pc', label:'Pós-cirúrgico', icon:'ti-needle', desc:'Abdominais, hérnias, urológicas, outros'},
+];
+
+const dominiosPorCategoria = {
+  msk: [
+    {id:'amp', label:'Amplitude de movimento', opts:[{v:'ok',l:'Funcional para o GHE'},{v:'atencao',l:'Limitação leve'},{v:'veto',l:'Limitação moderada/grave'}]},
+    {id:'forca', label:'Força segmentar', opts:[{v:'ok',l:'Suficiente para carga'},{v:'atencao',l:'Reduzida'},{v:'veto',l:'Insuficiente'}]},
+    {id:'equil', label:'Equilíbrio / propriocepção', opts:[{v:'ok',l:'Estável'},{v:'atencao',l:'Instável em irregular'},{v:'veto',l:'Instável em plano'}]},
+    {id:'dor', label:'Dor residual (EVA)', opts:[{v:'ok',l:'EVA ≤ 2'},{v:'atencao',l:'EVA 3–5'},{v:'veto',l:'EVA > 5 ou opioide'}]},
+    {id:'fisio', label:'Alta fisioterápica', opts:[{v:'ok',l:'Recebida'},{v:'atencao',l:'Em curso'},{v:'veto',l:'Não iniciada'}]},
+  ],
+  sm: [
+    {id:'humor', label:'Estabilidade de humor', opts:[{v:'ok',l:'Eutímico ≥ 15 dias'},{v:'atencao',l:'Oscilação leve'},{v:'veto',l:'Instabilidade ativa'}]},
+    {id:'sono', label:'Sono', opts:[{v:'ok',l:'Restaurador'},{v:'atencao',l:'Insônia leve controlada'},{v:'veto',l:'Insônia grave'}]},
+    {id:'cogn', label:'Concentração / atenção', opts:[{v:'ok',l:'Preservada'},{v:'atencao',l:'Lentificação leve'},{v:'veto',l:'Prejuízo moderado/grave'}]},
+    {id:'subs', label:'Uso de substância', opts:[{v:'ok',l:'Abstinência verificada'},{v:'atencao',l:'Em programa ativo'},{v:'veto',l:'Recaída recente'}]},
+    {id:'med', label:'Medicação psicotrópica', opts:[{v:'ok',l:'Estável ≥ 30 dias'},{v:'atencao',l:'Ajuste recente < 30 dias'},{v:'veto',l:'BZD ativo + função de risco'}]},
+  ],
+  cv: [
+    {id:'mets', label:'Capacidade funcional', opts:[{v:'ok',l:'≥ 5 METs sem sintomas'},{v:'atencao',l:'3–5 METs'},{v:'veto',l:'< 3 METs ou teste não feito'}]},
+    {id:'pa', label:'Controle pressórico', opts:[{v:'ok',l:'PA < 140/90'},{v:'atencao',l:'PA 140–159/90–99'},{v:'veto',l:'PA > 160/100'}]},
+    {id:'fe', label:'Fração de ejeção', opts:[{v:'ok',l:'FE ≥ 50%'},{v:'atencao',l:'FE 40–49%'},{v:'veto',l:'FE < 40%'}]},
+    {id:'antiarr', label:'Antiarrítmico / anticoag.', opts:[{v:'ok',l:'Estável, sem evento'},{v:'atencao',l:'Ajuste recente'},{v:'veto',l:'Evento arrítmico < 30 dias'}]},
+    {id:'cardio', label:'Laudo cardiologista', opts:[{v:'ok',l:'Liberação explícita'},{v:'atencao',l:'Laudo omisso'},{v:'veto',l:'Restrição ativa em laudo'}]},
+  ],
+  pc: [
+    {id:'cicatriz', label:'Cicatrização', opts:[{v:'ok',l:'Completa'},{v:'atencao',l:'Em curso, sem complicação'},{v:'veto',l:'Deiscência / infecção'}]},
+    {id:'dor2', label:'Dor incisional (EVA)', opts:[{v:'ok',l:'EVA ≤ 2'},{v:'atencao',l:'EVA 3–4'},{v:'veto',l:'EVA ≥ 5 ou opioide'}]},
+    {id:'altacir', label:'Alta cirúrgica', opts:[{v:'ok',l:'Recebida com liberação'},{v:'atencao',l:'Prevista < 15 dias'},{v:'veto',l:'Não recebida'}]},
+    {id:'carga', label:'Restrição de carga', opts:[{v:'ok',l:'Sem restrição'},{v:'atencao',l:'Restrição definida em laudo'},{v:'veto',l:'Restrição indefinida'}]},
+    {id:'complic', label:'Complicação pós-op', opts:[{v:'ok',l:'Ausente'},{v:'atencao',l:'Resolvida'},{v:'veto',l:'Ativa'}]},
+  ],
+};
+
+const regrasVeto = {
+  sm: [
+    {cond: d => d.med === 'veto', msg:'Benzodiazepínico ativo com função de risco → veto automático para NR-33/NR-35'},
+    {cond: d => d.subs === 'veto', msg:'Recaída recente confirmada → veto automático, encaminhar Hub'},
+  ],
+  cv: [
+    {cond: d => d.mets === 'veto' && state.data.diasNum > 0, msg:'Capacidade funcional < 3 METs → veto para esforço físico intenso'},
+  ],
+};
+
+function calcDecisao() {
+  const d = state.data.dominios;
+  const cat = state.data.categoria;
+  const vetos = [];
+  const restricoes = [];
+
+  if (regrasVeto[cat]) {
+    regrasVeto[cat].forEach(r => { if(r.cond(d)) vetos.push(r.msg); });
+  }
+
+  const vals = Object.values(d);
+  const nVeto = vals.filter(v=>v==='veto').length;
+  const nAtencao = vals.filter(v=>v==='atencao').length;
+  const nOk = vals.filter(v=>v==='ok').length;
+  const total = vals.length;
+
+  if(vetos.length > 0 || nVeto >= 2) return {tipo:'veto', vetos};
+  if(nVeto === 1) return {tipo:'junta', vetos, restricoes:[`1 domínio crítico identificado — avaliação pelo Hub recomendada`]};
+  if(nAtencao >= 3) return {tipo:'junta', vetos, restricoes:[`${nAtencao} domínios com atenção — encaminhar para Junta Médica`]};
+  if(nAtencao > 0) return {tipo:'restrito', vetos, restricoes:[`${nAtencao} domínio(s) com restrição provisória — definir atividades vedadas e prazo de reavaliação`]};
+  if(nOk === total && total > 0) return {tipo:'pleno', vetos, restricoes:[]};
+  return {tipo:'restrito', vetos, restricoes:['Avaliação incompleta — complete todos os domínios']};
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const s = state.step;
+  const totalSteps = 5;
+  const pct = Math.round((s/totalSteps)*100);
+
+  let html = `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+
+  const stepLabels = ['Categoria','Afastamento','Função','Domínios','Decisão'];
+  html += `<div class="step-bar">`;
+  stepLabels.forEach((l,i)=>{
+    const cls = i < s ? 'done' : i === s ? 'active' : '';
+    html += `<div class="step-dot ${cls}">${i < s ? '<i class="ti ti-check" style="font-size:13px"></i>' : i+1}</div>`;
+    if(i < stepLabels.length-1) html += `<div class="step-line"></div>`;
+  });
+  html += `</div>`;
+
+  if(s === 0) {
+    html += `<div class="card">
+      <div class="card-title">Categoria do afastamento</div>
+      <div class="card-sub">Selecione o grupo clínico principal</div>
+      <div class="opt-grid">`;
+    categorias.forEach(c=>{
+      const sel = state.data.categoria === c.id ? 'selected' : '';
+      html += `<button class="opt-btn ${sel}" onclick="selectCat('${c.id}')">
+        <i class="ti ${c.icon} opt-icon" aria-hidden="true"></i>
+        <span style="font-weight:500;display:block;margin-bottom:2px">${c.label}</span>
+        <span style="font-size:11px;color:var(--color-text-secondary)">${c.desc}</span>
+      </button>`;
+    });
+    html += `</div></div>
+    <div class="nav-row"><button class="btn-primary" onclick="next()" ${!state.data.categoria?'disabled style="opacity:0.4"':''}>Continuar</button></div>`;
+  }
+
+  else if(s === 1) {
+    const opts = [
+      {id:'leve', label:'< 15 dias', sub:'Fluxo leve'},
+      {id:'medio', label:'15 – 60 dias', sub:'Fluxo intermediário'},
+      {id:'grave', label:'> 60 dias', sub:'Fluxo complexo → Hub'},
+    ];
+    html += `<div class="card">
+      <div class="card-title">Duração do afastamento</div>
+      <div class="card-sub">Selecione o intervalo atual</div>
+      <div class="opt-grid">`;
+    opts.forEach(o=>{
+      const sel = state.data.dias === o.id ? 'selected':'';
+      html += `<button class="opt-btn ${sel}" onclick="selectDias('${o.id}')">
+        <span style="font-weight:500;display:block;font-size:14px;margin-bottom:2px">${o.label}</span>
+        <span style="font-size:11px;color:var(--color-text-secondary)">${o.sub}</span>
+      </button>`;
+    });
+    html += `</div>`;
+    if(state.data.dias === 'leve') html += `<div class="alert alert-info" style="margin-top:12px"><i class="ti ti-info-circle" aria-hidden="true"></i><span>Afastamento curto — fluxo leve. Checklist mínimo de aptidão aplicável.</span></div>`;
+    if(state.data.dias === 'grave') html += `<div class="alert alert-warn" style="margin-top:12px"><i class="ti ti-alert-triangle" aria-hidden="true"></i><span>Afastamento longo — encaminhar ao Hub para avaliação completa e perícia estruturada.</span></div>`;
+    html += `</div><div class="nav-row">
+      <button class="btn-secondary" onclick="prev()">Voltar</button>
+      <button class="btn-primary" onclick="next()" ${!state.data.dias?'disabled style="opacity:0.4"':''}>Continuar</button>
+    </div>`;
+  }
+
+  else if(s === 2) {
+    const opts = [
+      {id:'sim', label:'Sim — NR-33/NR-35', sub:'Altura, confinamento, eletricidade', icon:'ti-alert-triangle'},
+      {id:'nao', label:'Não', sub:'Atividade administrativa ou operacional padrão', icon:'ti-check'},
+    ];
+    html += `<div class="card">
+      <div class="card-title">Função crítica</div>
+      <div class="card-sub">O trabalhador exerce atividade crítica regulamentada?</div>
+      <div class="opt-grid">`;
+    opts.forEach(o=>{
+      const sel = state.data.funcaoCritica === o.id ? 'selected':'';
+      html += `<button class="opt-btn ${sel}" onclick="selectFuncao('${o.id}')">
+        <i class="ti ${o.icon} opt-icon" aria-hidden="true"></i>
+        <span style="font-weight:500;display:block;margin-bottom:2px">${o.label}</span>
+        <span style="font-size:11px;color:var(--color-text-secondary)">${o.sub}</span>
+      </button>`;
+    });
+    html += `</div>`;
+    if(state.data.funcaoCritica === 'sim') html += `<div class="alert alert-veto" style="margin-top:12px"><i class="ti ti-shield-exclamation" aria-hidden="true"></i><span>Regras binárias NR-33/NR-35 ativas. Qualquer domínio crítico resulta em veto automático.</span></div>`;
+    html += `</div><div class="nav-row">
+      <button class="btn-secondary" onclick="prev()">Voltar</button>
+      <button class="btn-primary" onclick="next()" ${!state.data.funcaoCritica?'disabled style="opacity:0.4"':''}>Continuar</button>
+    </div>`;
+  }
+
+  else if(s === 3) {
+    const cat = state.data.categoria;
+    const doms = dominiosPorCategoria[cat] || [];
+    const catLabel = categorias.find(c=>c.id===cat)?.label || '';
+    html += `<div class="card">
+      <div class="card-title">Avaliação de domínios — ${catLabel}</div>
+      <div class="card-sub">Selecione o status clínico atual para cada domínio</div>
+      <div class="section-label">Status por domínio</div>`;
+    doms.forEach(dom=>{
+      html += `<div class="domain-row">
+        <div class="domain-name">${dom.label}</div>
+        <div class="domain-opts">`;
+      dom.opts.forEach(o=>{
+        const sel = state.data.dominios[dom.id] === o.v ? o.v : '';
+        html += `<button class="dom-btn ${sel}" onclick="selectDominio('${dom.id}','${o.v}')">${o.l}</button>`;
+      });
+      html += `</div></div>`;
+    });
+    const preenchidos = Object.keys(state.data.dominios).filter(k=>doms.find(d=>d.id===k)).length;
+    html += `</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">${preenchidos} de ${doms.length} domínios avaliados</div>
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="prev()">Voltar</button>
+      <button class="btn-primary" onclick="next()" ${preenchidos<doms.length?'disabled style="opacity:0.4"':''}>Ver decisão</button>
+    </div>`;
+  }
+
+  else if(s === 4) {
+    const dec = calcDecisao();
+    const catLabel = categorias.find(c=>c.id===state.data.categoria)?.label || '';
+    const diasLabel = {leve:'< 15 dias', medio:'15–60 dias', grave:'> 60 dias'}[state.data.dias] || '';
+    const funcaoLabel = state.data.funcaoCritica === 'sim' ? 'Sim (NR-33/NR-35)' : 'Não';
+
+    const configs = {
+      pleno: {cls:'pleno', icon:'ti-circle-check', color:'#27500A', titulo:'Aptidão plena', sub:'Todos os domínios dentro dos critérios. Retorno autorizado.'},
+      restrito: {cls:'restrito', icon:'ti-alert-circle', color:'#633806', titulo:'Restrição provisória', sub:'Retorno com restrições definidas abaixo. Prazo de reavaliação obrigatório.'},
+      veto: {cls:'veto', icon:'ti-ban', color:'#791F1F', titulo:'Veto de retorno', sub:'Critério crítico identificado. Retorno não autorizado neste momento.'},
+      junta: {cls:'junta', icon:'ti-users', color:'#0C447C', titulo:'Encaminhar à Junta / Hub', sub:'Complexidade elevada. Avaliação multiprofissional necessária antes da decisão.'},
+    };
+    const cfg = configs[dec.tipo];
+
+    html += `<div class="decision-box ${cfg.cls}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <i class="ti ${cfg.icon}" style="font-size:22px;color:${cfg.color}" aria-hidden="true"></i>
+        <div class="decision-title" style="color:${cfg.color}">${cfg.titulo}</div>
+      </div>
+      <div class="decision-sub" style="color:${cfg.color}">${cfg.sub}</div>`;
+
+    if(dec.vetos.length > 0) {
+      dec.vetos.forEach(v=>{
+        html += `<div class="alert alert-veto"><i class="ti ti-ban" aria-hidden="true"></i><span>${v}</span></div>`;
+      });
+    }
+    if(dec.restricoes && dec.restricoes.length > 0) {
+      dec.restricoes.forEach(r=>{
+        html += `<div class="alert alert-warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i><span>${r}</span></div>`;
+      });
+    }
+    html += `</div>`;
+
+    html += `<div class="card" style="margin-top:1rem">
+      <div class="card-title">Resumo da avaliação</div>
+      <div class="summary-row"><span class="summary-label">Categoria</span><span class="summary-val">${catLabel}</span></div>
+      <div class="summary-row"><span class="summary-label">Afastamento</span><span class="summary-val">${diasLabel}</span></div>
+      <div class="summary-row"><span class="summary-label">Função crítica</span><span class="summary-val">${funcaoLabel}</span></div>
+      <div class="summary-row"><span class="summary-label">Decisão</span><span class="summary-val">${cfg.titulo}</span></div>
+      <div class="summary-row"><span class="summary-label">Data</span><span class="summary-val">${new Date().toLocaleDateString('pt-BR')}</span></div>
+    </div>`;
+
+    html += `<div class="nav-row">
+      <button class="btn-secondary" onclick="reiniciar()"><i class="ti ti-refresh" aria-hidden="true"></i> Nova avaliação</button>
+      <button class="btn-export" onclick="exportar()"><i class="ti ti-file-text" aria-hidden="true"></i> Exportar decisão</button>
+    </div>`;
+  }
+
+  app.innerHTML = html;
+}
+
+function selectCat(id){ state.data.categoria = id; state.data.dominios = {}; render(); }
+function selectDias(id){ state.data.dias = id; render(); }
+function selectFuncao(id){ state.data.funcaoCritica = id; render(); }
+function selectDominio(id, val){ state.data.dominios[id] = val; render(); }
+function next(){ state.step = Math.min(state.step+1, 4); render(); }
+function prev(){ state.step = Math.max(state.step-1, 0); render(); }
+function reiniciar(){ state.step=0; state.data={categoria:null,dias:null,funcaoCritica:null,dominios:{},vetos:[],restricoes:[]}; render(); }
+
+function exportar(){
+  const dec = calcDecisao();
+  const catLabel = categorias.find(c=>c.id===state.data.categoria)?.label || '';
+  const diasLabel = {leve:'< 15 dias', medio:'15–60 dias', grave:'> 60 dias'}[state.data.dias] || '';
+  const funcaoLabel = state.data.funcaoCritica === 'sim' ? 'Sim (NR-33/NR-35)' : 'Não';
+  const decisaoLabel = {pleno:'Aptidão plena', restrito:'Restrição provisória', veto:'Veto de retorno', junta:'Encaminhar à Junta/Hub'}[dec.tipo];
+  const doms = dominiosPorCategoria[state.data.categoria] || [];
+  let domTexto = doms.map(d=>{
+    const v = state.data.dominios[d.id];
+    const opt = d.opts.find(o=>o.v===v);
+    return `${d.label}: ${opt ? opt.l : '—'}`;
+  }).join('\n');
+
+  const texto = `ALGORITMO RTW — RETORNO AO TRABALHO
+Data: ${new Date().toLocaleDateString('pt-BR')}
+${'─'.repeat(40)}
+Categoria: ${catLabel}
+Afastamento: ${diasLabel}
+Função crítica: ${funcaoLabel}
+${'─'.repeat(40)}
+DOMÍNIOS AVALIADOS:
+${domTexto}
+${'─'.repeat(40)}
+DECISÃO: ${decisaoLabel}
+${dec.vetos.length > 0 ? '\nVETOS ATIVOS:\n' + dec.vetos.join('\n') : ''}
+${dec.restricoes && dec.restricoes.length > 0 ? '\nRESTRIÇÕES:\n' + dec.restricoes.join('\n') : ''}
+${'─'.repeat(40)}
+Médico responsável: ___________________________
+CRM: _____________ Assinatura: ________________`;
+
+  const blob = new Blob([texto], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `RTW_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+render();
+</script>
