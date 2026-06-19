@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nexo Técnico">
+<title>Investigação de Nexo Técnico</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F2F7;color:#1C1C1E;min-height:100vh;padding-bottom:48px}
+.header{background:#1C1C1E;padding:16px 20px 14px;position:sticky;top:0;z-index:10}
+.header-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8E8E93;text-transform:uppercase;margin-bottom:4px}
+.header-title{font-size:20px;font-weight:700;color:#fff}
+.header-sub{font-size:12px;color:#636366;margin-top:3px}
+.progress-track{height:2px;background:#3A3A3C;margin-top:12px;border-radius:1px;overflow:hidden}
+.progress-fill{height:100%;background:#FF6B35;border-radius:1px;transition:width 0.35s}
+.step-row{display:flex;gap:4px;margin-top:10px;flex-wrap:wrap}
+.step-pip{width:6px;height:6px;border-radius:50%;background:#3A3A3C;flex-shrink:0;transition:all 0.2s}
+.step-pip.active{background:#FF6B35;width:18px;border-radius:3px}
+.step-pip.done{background:#30D158}
+.content{padding:20px 16px 0}
+.section-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.1em;color:#8E8E93;text-transform:uppercase;margin-bottom:8px}
+.section-title{font-size:22px;font-weight:700;color:#1C1C1E;letter-spacing:-0.4px;margin-bottom:4px;line-height:1.2}
+.section-sub{font-size:14px;color:#8E8E93;margin-bottom:16px;line-height:1.5}
+.input-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px}
+.input-label{font-size:12px;font-weight:600;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:block}
+.input-field{width:100%;padding:11px 14px;border:1px solid #E5E5EA;border-radius:10px;font-size:15px;color:#1C1C1E;background:#F9F9F9;outline:none;-webkit-appearance:none}
+.input-field:focus{border-color:#FF6B35;background:#fff}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+textarea.input-field{resize:none;min-height:72px;line-height:1.5}
+select.input-field{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-color:#F9F9F9;padding-right:36px}
+.crit-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid #E5E5EA}
+.crit-card.ok{border-left-color:#30D158}
+.crit-card.parcial{border-left-color:#FF9F0A}
+.crit-card.ausente{border-left-color:#FF3B30}
+.crit-num{font-size:10px;font-weight:700;color:#FF6B35;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.crit-title{font-size:14px;font-weight:700;color:#1C1C1E;margin-bottom:4px;line-height:1.3}
+.crit-desc{font-size:12px;color:#8E8E93;margin-bottom:10px;line-height:1.4}
+.crit-opts{display:flex;gap:6px}
+.crit-btn{flex:1;padding:9px 6px;border-radius:10px;border:1px solid #E5E5EA;background:#F2F2F7;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.15s;color:#8E8E93}
+.crit-btn:active{transform:scale(0.97)}
+.crit-btn.ok{background:#E8F9EE;border-color:#30D158;color:#1A8C35}
+.crit-btn.parcial{background:#FFF8EE;border-color:#FF9F0A;color:#CC7A00}
+.crit-btn.ausente{background:#FFF1F0;border-color:#FF3B30;color:#CC1800}
+.crit-obs{width:100%;margin-top:8px;padding:8px 10px;border:1px solid #E5E5EA;border-radius:8px;font-size:12px;background:#F9F9F9;color:#1C1C1E;resize:none;min-height:52px;outline:none;-webkit-appearance:none;line-height:1.4}
+.crit-obs:focus{border-color:#FF6B35;background:#fff}
+.alert{border-radius:12px;padding:11px 13px;font-size:13px;margin:8px 0;display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+.alert-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.alert-red{background:#FFF1F0;border-left:3px solid #FF3B30;color:#8B1A1A}
+.alert-amber{background:#FFF8EE;border-left:3px solid #FF9F0A;color:#7A4A00}
+.alert-green{background:#F0FFF4;border-left:3px solid #30D158;color:#1A5C2E}
+.alert-gray{background:#F2F2F7;border-left:3px solid #8E8E93;color:#3A3A3C}
+.alert-orange{background:#FFF3EE;border-left:3px solid #FF6B35;color:#8B3A00}
+.nav-row{display:flex;gap:10px;padding:16px 16px 0}
+.btn-back{background:#F2F2F7;color:#1C1C1E;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-back:active{background:#E5E5EA}
+.btn-next{flex:1;background:#FF6B35;color:#fff;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-next:active{background:#CC4A1A}
+.btn-next:disabled{background:#C7C7CC;cursor:default}
+.btn-export{flex:1;background:#1C1C1E;color:#fff;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-export:active{background:#3A3A3C}
+.btn-reset{background:#F2F2F7;color:#8E8E93;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer}
+.nexo-hero{border-radius:16px;padding:22px;margin-bottom:14px;text-align:center}
+.nexo-hero.confirmado{background:linear-gradient(135deg,#FFF3EE,#FFD9C0);border:1px solid #FF6B35}
+.nexo-hero.provavel{background:linear-gradient(135deg,#FFF8EE,#FFE8C0);border:1px solid #FF9F0A}
+.nexo-hero.possivel{background:linear-gradient(135deg,#FFFBE0,#FFF0A0);border:1px solid #FFD60A}
+.nexo-hero.improvavel{background:linear-gradient(135deg,#F2F2F7,#E5E5EA);border:1px solid #8E8E93}
+.nexo-hero.ausente{background:linear-gradient(135deg,#F0FFF4,#C8F0D5);border:1px solid #30D158}
+.nexo-emoji{font-size:42px;margin-bottom:10px;display:block}
+.nexo-class{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:6px}
+.nexo-badge{display:inline-block;border-radius:10px;padding:5px 16px;font-size:22px;font-weight:800;margin-bottom:10px}
+.nexo-sub{font-size:13px;line-height:1.5}
+.nexo-hero.confirmado .nexo-class{color:#CC4A1A}
+.nexo-hero.confirmado .nexo-badge{background:#FFD9C0;color:#8B3A00}
+.nexo-hero.confirmado .nexo-sub{color:#8B3A00}
+.nexo-hero.provavel .nexo-class{color:#CC7A00}
+.nexo-hero.provavel .nexo-badge{background:#FFE8C0;color:#7A4A00}
+.nexo-hero.provavel .nexo-sub{color:#7A4A00}
+.nexo-hero.possivel .nexo-class{color:#997A00}
+.nexo-hero.possivel .nexo-badge{background:#FFF0A0;color:#6B5500}
+.nexo-hero.possivel .nexo-sub{color:#6B5500}
+.nexo-hero.improvavel .nexo-class{color:#636366}
+.nexo-hero.improvavel .nexo-badge{background:#E5E5EA;color:#3A3A3C}
+.nexo-hero.improvavel .nexo-sub{color:#3A3A3C}
+.nexo-hero.ausente .nexo-class{color:#1A8C35}
+.nexo-hero.ausente .nexo-badge{background:#C8F0D5;color:#0D4D1F}
+.nexo-hero.ausente .nexo-sub{color:#0D4D1F}
+.summary-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px}
+.summary-title{font-size:12px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.summary-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid #F2F2F7;font-size:13px;gap:10px}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:#8E8E93;flex-shrink:0}
+.summary-val{font-weight:600;color:#1C1C1E;text-align:right}
+.criterio-mini{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid #F2F2F7;font-size:12px}
+.criterio-mini:last-child{border-bottom:none}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:#30D158}
+.dot-parcial{background:#FF9F0A}
+.dot-ausente{background:#FF3B30}
+.dot-nd{background:#C7C7CC}
+.score-bar{height:8px;background:#E5E5EA;border-radius:4px;overflow:hidden;margin:8px 0}
+.score-fill{height:100%;border-radius:4px;transition:width 0.5s}
+.schilling-btn{flex:1;background:#fff;border:2px solid #E5E5EA;border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.15s}
+.schilling-btn:active{transform:scale(0.97)}
+.schilling-btn.sel-1{border-color:#FF3B30;background:#FFF1F0}
+.schilling-btn.sel-2{border-color:#FF9F0A;background:#FFF8EE}
+.schilling-btn.sel-3{border-color:#FFD60A;background:#FFFBE0}
+.schilling-num{font-size:22px;font-weight:800;display:block;margin-bottom:4px}
+.schilling-btn.sel-1 .schilling-num{color:#CC1800}
+.schilling-btn.sel-2 .schilling-num{color:#CC7A00}
+.schilling-btn.sel-3 .schilling-num{color:#997A00}
+.schilling-label{font-size:11px;font-weight:600;color:#8E8E93;line-height:1.3}
+.action-pill{display:inline-block;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-right:4px;margin-top:4px}
+.pill-red{background:#FF3B30;color:#fff}
+.pill-amber{background:#FF9F0A;color:#fff}
+.pill-orange{background:#FF6B35;color:#fff}
+.pill-gray{background:#8E8E93;color:#fff}
+.pill-green{background:#30D158;color:#fff}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#1C1C1E;border-radius:20px 20px 0 0;padding:22px 18px 44px;width:100%;max-height:85vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:#3A3A3C;border-radius:2px;margin:0 auto 18px}
+.modal-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.modal-sub{font-size:12px;color:#636366;margin-bottom:14px}
+.modal-body{font-size:11px;color:#EBEBF5;line-height:1.7;white-space:pre-wrap;font-family:'Courier New',monospace;background:#2C2C2E;border-radius:10px;padding:13px;margin-bottom:10px}
+.modal-btn{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.modal-btn.primary{background:#FF6B35;color:#fff}
+.modal-btn.secondary{background:#2C2C2E;color:#fff}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-eyebrow">CFM 2.323/2022 · Lei 8.213/91 · LDRT</div>
+  <div class="header-title">Investigação de Nexo Técnico</div>
+  <div class="header-sub">Doença ocupacional — passo a passo</div>
+  <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+  <div class="step-row" id="steps"></div>
+</div>
+<div id="app"></div>
+<div class="modal-overlay" id="modal" onclick="fecharModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Parecer Técnico de Nexo Causal</div>
+    <div class="modal-sub">CFM 2.323/2022 — 9 critérios do Art. 2º</div>
+    <div class="modal-body" id="modal-body"></div>
+    <button class="modal-btn primary" onclick="copiar()">📋 Copiar para área de transferência</button>
+    <button class="modal-btn secondary" onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
+<script>
+const ETAPAS = ['Dados','Diagnóstico','Schilling','9 Critérios','Documentação','Conclusão'];
+
+const S = {
+  step: 0,
+  d: {
+    nome:'', cargo:'', setor:'', matricula:'', dataAval:'', medico:'', crm:'',
+    cid:'', cidDesc:'', cnae:'', funcao:'',
+    tempoExpAnos:'', tempoExpDesc:'',
+    schilling: null,
+    ldrtConsta: null,
+    ntepPositivo: null,
+    // 9 critérios CFM 2.323/2022 Art. 2º
+    // null=nd, 'ok'=satisfeito, 'parcial'=parcial, 'ausente'=não satisfeito
+    crit: {
+      c1:null, c2:null, c3:null, c4:null, c5:null,
+      c6:null, c7:null, c8:null, c9:null
+    },
+    obsC: {
+      c1:'', c2:'', c3:'', c4:'', c5:'',
+      c6:'', c7:'', c8:'', c9:''
+    },
+    // Documentação
+    docs: {
+      gro:null, pcmso:null, ppp:null, laudoAmbiental:null,
+      examesCompl:null, prontuario:null, catEmitida:null
+    },
+    conclusaoNexo: null,
+    acoesProposto: '',
+    obsGeral: '',
+  }
+};
+
+const CRITERIOS = [
+  {
+    id:'c1', num:'I',
+    title:'História clínica e ocupacional',
+    desc:'Atual e pregressa — todos os empregos anteriores, funções exercidas, agentes de risco, tempo de exposição. Decisiva em qualquer investigação.',
+    placeholder:'Ex: 15 anos como operador em refinaria, exposição a benzeno documentada no GRO. Empregos anteriores sem exposição relevante.'
+  },
+  {
+    id:'c2', num:'II',
+    title:'Estudo do local de trabalho',
+    desc:'Visita técnica ao posto de trabalho, identificação dos agentes presentes, condições reais vs. descritas no GRO.',
+    placeholder:'Ex: Visita realizada em 12/06/2026. Confirmada exposição ao benzeno na área de processo. GRO com medições abaixo do VRT após 2022.'
+  },
+  {
+    id:'c3', num:'III',
+    title:'Dados epidemiológicos',
+    desc:'Ocorrência da doença na categoria profissional. Outros trabalhadores do mesmo GHE com quadros semelhantes.',
+    placeholder:'Ex: 2 outros trabalhadores da mesma área com alterações hematológicas nos últimos 3 anos. NTEP positivo para CNAE da empresa × C92.'
+  },
+  {
+    id:'c4', num:'IV',
+    title:'Literatura científica atualizada',
+    desc:'Evidências publicadas sobre a relação entre a doença e o agente suspeito. IARC, estudos de coorte, revisões sistemáticas.',
+    placeholder:'Ex: IARC Monografia 120 (2018) — benzeno Grupo 1. Hayes et al. 1997 JNCI — dose-resposta leucemia-benzeno confirmada.'
+  },
+  {
+    id:'c5', num:'V',
+    title:'Associação temporal',
+    desc:'O início da exposição precede o início dos sintomas pelo tempo de latência esperado para a doença.',
+    placeholder:'Ex: Exposição a benzeno iniciada em 2008. Diagnóstico de LMA em 2024. Latência de 16 anos — compatível com literatura (5-20 anos).'
+  },
+  {
+    id:'c6', num:'VI',
+    title:'Quadro clínico em expostos similares',
+    desc:'Ocorrência de quadro clínico ou subclínico em trabalhadores expostos a riscos semelhantes — na mesma empresa ou em outras.',
+    placeholder:'Ex: Registro de 3 casos de alterações hematológicas em trabalhadores do mesmo GHE nos últimos 5 anos.'
+  },
+  {
+    id:'c7', num:'VII',
+    title:'Identificação dos riscos',
+    desc:'Riscos físicos, químicos, biológicos, mecânicos, estressantes. Confirmação da presença do agente suspeito no ambiente de trabalho.',
+    placeholder:'Ex: Benzeno confirmado por cromatografia gasosa (GC) nas medições de 2020-2022. AMS urinário alterado em monitoramento de 2021.'
+  },
+  {
+    id:'c8', num:'VIII',
+    title:'Depoimento do trabalhador',
+    desc:'Relato do próprio trabalhador sobre as condições de trabalho, exposições percebidas, uso de EPI, incidentes e episódios de exposição intensa.',
+    placeholder:'Ex: Trabalhador relata exposição sem respirador em manutenções até 2019. Episódios frequentes de odor intenso de solvente na área.'
+  },
+  {
+    id:'c9', num:'IX',
+    title:'Conhecimentos interdisciplinares',
+    desc:'Contribuições de outras disciplinas: toxicologia, ergonomia, epidemiologia, psicologia, engenharia de segurança.',
+    placeholder:'Ex: Laudo toxicológico do SESMT confirma exposição cumulativa estimada em 8 ppm×anos. Engenheiro de segurança confirma falhas no sistema de ventilação até 2020.'
+  },
+];
+
+const DOCS_LIST = [
+  {id:'gro', label:'GRO/PGR (ou PPRA anterior)', hint:'Demonstra exposição ou controle dos riscos'},
+  {id:'pcmso', label:'PCMSO com exames periódicos', hint:'Série histórica — confirma ou nega agravamento'},
+  {id:'ppp', label:'PPP — Perfil Profissiográfico', hint:'Histórico de exposição e funções'},
+  {id:'laudoAmbiental', label:'Laudos de medição ambiental', hint:'Quantificação da exposição ao agente'},
+  {id:'examesCompl', label:'Exames complementares dirigidos', hint:'Resultado coerente com agente suspeito'},
+  {id:'prontuario', label:'Prontuário com evolução', hint:'Registro longitudinal da saúde'},
+  {id:'catEmitida', label:'CAT emitida', hint:'Registro formal do evento'},
+];
+
+function calcNexo() {
+  const c = S.d.crit;
+  const vals = Object.values(c);
+  const nOk = vals.filter(v=>v==='ok').length;
+  const nParcial = vals.filter(v=>v==='parcial').length;
+  const nAusente = vals.filter(v=>v==='ausente').length;
+  const nAvaliados = vals.filter(v=>v!==null).length;
+  const score = nOk * 2 + nParcial * 1;
+  const maxScore = 18; // 9 critérios × 2
+
+  // c1 e c5 são decisivos (história e temporalidade)
+  const c1ok = c.c1 === 'ok' || c.c1 === 'parcial';
+  const c5ok = c.c5 === 'ok' || c.c5 === 'parcial';
+
+  // LDRT e NTEP como reforço
+  const ldrt = S.d.ldrtConsta === 'sim';
+  const ntep = S.d.ntepPositivo === 'sim';
+
+  if (nAusente >= 4 || (!c1ok && nAvaliados >= 5)) return {
+    tipo:'ausente', label:'Nexo Ausente', emoji:'✅',
+    sub:'Múltiplos critérios não satisfeitos. Nexo causal com o trabalho não sustentado tecnicamente.',
+    conclusao:'Após investigação sistemática dos 9 critérios da Resolução CFM 2.323/2022, não se verifica nexo causal entre a doença e as atividades laborais do trabalhador.',
+    acoes:['Registrar no prontuário','Comunicar ao trabalhador','Manter monitoramento clínico','CAT não indicada']
+  };
+
+  if (score >= 14 && c1ok && c5ok) return {
+    tipo:'confirmado', label:'Nexo Confirmado', emoji:'🔴',
+    sub:'Critérios robustamente satisfeitos. Nexo causal com o trabalho tecnicamente fundamentado.',
+    conclusao:'A investigação sistemática pelos critérios da Resolução CFM 2.323/2022 demonstra nexo causal entre a doença e as condições de trabalho. A história ocupacional, a associação temporal, a evidência epidemiológica e a identificação do agente são compatíveis com a relação trabalho-doença.',
+    acoes:['Emitir CAT obrigatoriamente','Notificar SINAN','Comunicar SESMT e CIPA','Avaliar afastamento','Acionar GRO para revisão de controles','Monitorar demais expostos do GHE']
+  };
+
+  if (score >= 10 && c1ok) return {
+    tipo:'provavel', label:'Nexo Provável', emoji:'🟠',
+    sub:'Maioria dos critérios satisfeitos. Nexo causal tecnicamente sustentável.',
+    conclusao:'A investigação pelos critérios da Resolução CFM 2.323/2022 indica nexo provável entre a doença e as condições de trabalho. Os critérios principais estão satisfeitos, com lacunas pontuais que não inviabilizam a caracterização.',
+    acoes:['Emitir CAT','Notificar SINAN','Completar documentação pendente','Comunicar SESMT','Monitorar expostos do GHE']
+  };
+
+  if (score >= 6) return {
+    tipo:'possivel', label:'Nexo Possível', emoji:'🟡',
+    sub:'Critérios parcialmente satisfeitos. Nexo plausível mas com lacunas importantes.',
+    conclusao:'A investigação pelos critérios da Resolução CFM 2.323/2022 indica nexo possível. Há plausibilidade técnica, mas critérios importantes estão ausentes ou incompletos. Investigação complementar necessária antes de definir o nexo.',
+    acoes:['Completar investigação — critérios ausentes','Solicitar exames complementares dirigidos','Visita ao local de trabalho se não realizada','Aguardar laudos antes de definir CAT','Discutir com equipe de saúde']
+  };
+
+  return {
+    tipo:'improvavel', label:'Nexo Improvável', emoji:'⬜',
+    sub:'Poucos critérios satisfeitos ou investigação incompleta.',
+    conclusao:'A investigação pelos critérios da Resolução CFM 2.323/2022 não sustenta nexo causal neste momento. Os critérios satisfeitos são insuficientes para caracterização técnica. Recomenda-se investigação adicional antes de qualquer conclusão.',
+    acoes:['Completar investigação','Solicitar documentação faltante','Não emitir CAT até conclusão','Registrar no prontuário']
+  };
+}
+
+function set(k,v){S.d[k]=v;renderEtapa();}
+function setCrit(id,v){S.d.crit[id]=v;renderEtapa();}
+function setDoc(id,v){S.d.docs[id]=v;renderEtapa();}
+function salvar(k,v){S.d[k]=v;}
+function salvarObsC(id,v){S.d.obsC[id]=v;}
+function avancar(){S.step=Math.min(S.step+1,ETAPAS.length-1);render();}
+function voltar(){S.step=Math.max(S.step-1,0);render();}
+function render(){renderSteps();renderEtapa();window.scrollTo({top:0,behavior:'smooth'});}
+
+function renderSteps(){
+  const pct=(S.step/(ETAPAS.length-1))*100;
+  document.getElementById('prog').style.width=pct+'%';
+  let h='';
+  ETAPAS.forEach((l,i)=>{
+    const cls=i<S.step?'done':i===S.step?'active':'';
+    h+=`<div class="step-pip ${cls}" title="${l}"></div>`;
+  });
+  document.getElementById('steps').innerHTML=h;
+}
+
+function renderEtapa(){
+  renderSteps();
+  const app=document.getElementById('app');
+  const s=S.step;
+  let h='<div class="content">';
+
+  // ── 0: Dados ──────────────────────────────────────────────────────
+  if(s===0){
+    h+=`<div class="section-eyebrow">Etapa 1 de 5</div>
+    <div class="section-title">Dados do caso</div>
+    <div class="section-sub">Identificação do trabalhador e do investigador</div>
+    <div class="input-card">
+      <label class="input-label">Data da investigação</label>
+      <input id="f-data" class="input-field" type="date" value="${S.d.dataAval}" onchange="S.d.dataAval=this.value">
+    </div>
+    <div class="input-card">
+      <label class="input-label">Nome do trabalhador</label>
+      <input id="f-nome" class="input-field" type="text" placeholder="Nome completo" value="${S.d.nome}" onblur="salvar('nome',this.value)">
+    </div>
+    <div class="input-card">
+      <div class="input-row">
+        <div><label class="input-label">Matrícula</label><input id="f-mat" class="input-field" type="text" placeholder="Opcional" value="${S.d.matricula}" onblur="salvar('matricula',this.value)"></div>
+        <div><label class="input-label">Cargo</label><input id="f-cargo" class="input-field" type="text" placeholder="Ex: Operador" value="${S.d.cargo}" onblur="salvar('cargo',this.value)"></div>
+      </div>
+    </div>
+    <div class="input-card">
+      <label class="input-label">Setor / GHE</label>
+      <input id="f-setor" class="input-field" type="text" placeholder="Grupo Homogêneo de Exposição" value="${S.d.setor}" onblur="salvar('setor',this.value)">
+    </div>
+    <div class="input-card">
+      <div class="input-row">
+        <div><label class="input-label">Médico investigador</label><input id="f-med" class="input-field" type="text" placeholder="Nome" value="${S.d.medico}" onblur="salvar('medico',this.value)"></div>
+        <div><label class="input-label">CRM</label><input id="f-crm" class="input-field" type="text" placeholder="CRM/UF" value="${S.d.crm}" onblur="salvar('crm',this.value)"></div>
+      </div>
+    </div>`;
+    h+=`</div><div class="nav-row"><button class="btn-next" onclick="salvarDados0();avancar()">Continuar →</button></div>`;
+  }
+
+  // ── 1: Diagnóstico e exposição ────────────────────────────────────
+  else if(s===1){
+    h+=`<div class="section-eyebrow">Etapa 2 de 5 — Diagnóstico</div>
+    <div class="section-title">Diagnóstico e exposição</div>
+    <div class="section-sub">CID, agente suspeito e contexto laboral</div>
+    <div class="input-card">
+      <div class="input-row">
+        <div><label class="input-label">CID-10</label><input id="f-cid" class="input-field" type="text" placeholder="Ex: C92.0" value="${S.d.cid}" onblur="salvar('cid',this.value)"></div>
+        <div><label class="input-label">Tempo de exp. (anos)</label><input id="f-tempo" class="input-field" type="number" min="0" placeholder="Ex: 12" value="${S.d.tempoExpAnos}" onblur="salvar('tempoExpAnos',this.value)"></div>
+      </div>
+    </div>
+    <div class="input-card">
+      <label class="input-label">Diagnóstico / descrição</label>
+      <input id="f-ciddesc" class="input-field" type="text" placeholder="Ex: Leucemia mieloide aguda" value="${S.d.cidDesc}" onblur="salvar('cidDesc',this.value)">
+    </div>
+    <div class="input-card">
+      <label class="input-label">CNAE da empresa</label>
+      <input id="f-cnae" class="input-field" type="text" placeholder="Ex: 1921-7/00 — Fabricação de produtos do refino" value="${S.d.cnae}" onblur="salvar('cnae',this.value)">
+    </div>
+    <div class="input-card">
+      <label class="input-label">Agente / fator de risco suspeito</label>
+      <input id="f-funcao" class="input-field" type="text" placeholder="Ex: Benzeno, ruído, fatores ergonômicos" value="${S.d.funcao}" onblur="salvar('funcao',this.value)">
+    </div>
+    <div class="input-card">
+      <label class="input-label">Descrição da exposição</label>
+      <textarea id="f-tempodesc" class="input-field" placeholder="Descreva as condições de exposição: concentração estimada, EPIs, episódios de exposição intensa…" onblur="salvar('tempoExpDesc',this.value)">${S.d.tempoExpDesc}</textarea>
+    </div>
+    <div class="input-card">
+      <label class="input-label">CID consta na LDRT? (Portaria MS 1.339/99)</label>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        ${['sim','nao','nao_verificado'].map(v=>`<button style="flex:1;padding:10px 6px;border-radius:10px;border:${S.d.ldrtConsta===v?'2px':'1px'} solid ${S.d.ldrtConsta===v?'#FF6B35':'#E5E5EA'};background:${S.d.ldrtConsta===v?'#FFF3EE':'#F9F9F9'};font-size:12px;font-weight:600;cursor:pointer;color:${S.d.ldrtConsta===v?'#CC4A1A':'#8E8E93'}" onclick="set('ldrtConsta','${v}')">${v==='sim'?'✅ Sim':v==='nao'?'❌ Não':'❓ Não verificado'}</button>`).join('')}
+      </div>
+    </div>
+    <div class="input-card">
+      <label class="input-label">NTEP positivo? (CID × CNAE)</label>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        ${['sim','nao','nao_verificado'].map(v=>`<button style="flex:1;padding:10px 6px;border-radius:10px;border:${S.d.ntepPositivo===v?'2px':'1px'} solid ${S.d.ntepPositivo===v?'#FF6B35':'#E5E5EA'};background:${S.d.ntepPositivo===v?'#FFF3EE':'#F9F9F9'};font-size:12px;font-weight:600;cursor:pointer;color:${S.d.ntepPositivo===v?'#CC4A1A':'#8E8E93'}" onclick="set('ntepPositivo','${v}')">${v==='sim'?'✅ Sim':v==='nao'?'❌ Não':'❓ Não verificado'}</button>`).join('')}
+      </div>
+    </div>
+    ${S.d.ldrtConsta==='sim'?`<div class="alert alert-orange"><span class="alert-icon">📋</span><span>CID consta na LDRT — a doença é reconhecida como potencialmente relacionada ao trabalho. Identificar o Grupo de Schilling na próxima etapa.</span></div>`:''}
+    ${S.d.ntepPositivo==='sim'?`<div class="alert alert-orange"><span class="alert-icon">⚠️</span><span>NTEP positivo — INSS presume nexo automaticamente. Empresa pode ser notificada. Documentação para contestação ou confirmação é urgente.</span></div>`:''}`;
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="salvarDiag();avancar()">Continuar →</button></div>`;
+  }
+
+  // ── 2: Classificação de Schilling ─────────────────────────────────
+  else if(s===2){
+    h+=`<div class="section-eyebrow">Etapa 3 de 5 — Classificação de Schilling</div>
+    <div class="section-title">Grupo de Schilling</div>
+    <div class="section-sub">Qual a natureza da relação entre o trabalho e a doença?</div>
+    <div style="display:flex;gap:10px;margin-bottom:12px">
+      <div class="schilling-btn ${S.d.schilling===1?'sel-1':''}" onclick="set('schilling',1)">
+        <span class="schilling-num">I</span>
+        <span class="schilling-label">Causa necessária</span>
+      </div>
+      <div class="schilling-btn ${S.d.schilling===2?'sel-2':''}" onclick="set('schilling',2)">
+        <span class="schilling-num">II</span>
+        <span class="schilling-label">Fator contributivo</span>
+      </div>
+      <div class="schilling-btn ${S.d.schilling===3?'sel-3':''}" onclick="set('schilling',3)">
+        <span class="schilling-num">III</span>
+        <span class="schilling-label">Concausa</span>
+      </div>
+    </div>`;
+
+    if(S.d.schilling===1){
+      h+=`<div class="alert alert-red"><span class="alert-icon">🔴</span><span><strong>Grupo I — Causa necessária:</strong> Sem a exposição ocupacional, a doença não ocorreria (ou seria rara). Exemplos: Benzenismo, Silicose, PAIR, Angiosarcoma por MVC. Nexo mais fácil de fundamentar — demonstrar exposição é suficiente.</span></div>`;
+    } else if(S.d.schilling===2){
+      h+=`<div class="alert alert-amber"><span class="alert-icon">🟠</span><span><strong>Grupo II — Fator contributivo:</strong> O trabalho aumenta a frequência ou gravidade, mas a doença também ocorre na população geral. Exemplos: LER/DORT, HAS, depressão ocupacional. Nexo requer demonstração de exposição significativa e plausibilidade.</span></div>`;
+    } else if(S.d.schilling===3){
+      h+=`<div class="alert alert-amber" style="background:#FFFBE0;border-color:#FFD60A;color:#6B5500"><span class="alert-icon">🟡</span><span><strong>Grupo III — Concausa:</strong> O trabalho desencadeou ou agravou condição preexistente. Exemplos: Asma agravada por irritantes, depressão desencadeada por fatores psicossociais. Necessário demonstrar agravamento documentado (exames antes × depois).</span></div>`;
+    }
+
+    h+=`<div class="input-card" style="margin-top:4px">
+      <label class="input-label">Justificativa da classificação</label>
+      <textarea id="f-schilling-obs" class="input-field" placeholder="Ex: Benzeno é Grupo I pela LDRT (Portaria 1.339/99) e IARC Monografia 120 — Grupo 1 carcinógeno humano…" onblur="salvar('schillingObs',this.value)">${S.d.schillingObs||''}</textarea>
+    </div>`;
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${S.d.schilling?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 3: 9 Critérios CFM 2.323/2022 ────────────────────────────────
+  else if(s===3){
+    const vals=Object.values(S.d.crit);
+    const avaliados=vals.filter(v=>v!==null).length;
+    const score=vals.filter(v=>v==='ok').length*2+vals.filter(v=>v==='parcial').length;
+    const pct=Math.round((score/18)*100);
+    h+=`<div class="section-eyebrow">Etapa 4 de 5 — Art. 2º CFM 2.323/2022</div>
+    <div class="section-title">Os 9 critérios</div>
+    <div class="section-sub">${avaliados} de 9 avaliados · Score: ${score}/18 (${pct}%)</div>
+    <div class="score-bar"><div class="score-fill" style="width:${pct}%;background:${pct>=75?'#30D158':pct>=50?'#FF9F0A':'#FF3B30'}"></div></div>
+    <div class="alert alert-orange"><span class="alert-icon">⚖️</span><span><strong>Resolução CFM 2.323/2022, Art. 2º §único:</strong> É vedado ao médico assistente determinar nexo causal sem observar todos os incisos abaixo.</span></div>`;
+
+    CRITERIOS.forEach(c=>{
+      const v=S.d.crit[c.id];
+      const cardCls=v==='ok'?'ok':v==='parcial'?'parcial':v==='ausente'?'ausente':'';
+      h+=`<div class="crit-card ${cardCls}">
+        <div class="crit-num">Inciso ${c.num}</div>
+        <div class="crit-title">${c.title}</div>
+        <div class="crit-desc">${c.desc}</div>
+        <div class="crit-opts">
+          <button class="crit-btn ${v==='ok'?'ok':''}" onclick="setCrit('${c.id}','ok')">✅ Satisfeito</button>
+          <button class="crit-btn ${v==='parcial'?'parcial':''}" onclick="setCrit('${c.id}','parcial')">⚠️ Parcial</button>
+          <button class="crit-btn ${v==='ausente'?'ausente':''}" onclick="setCrit('${c.id}','ausente')">❌ Ausente</button>
+        </div>
+        ${v?`<textarea class="crit-obs" placeholder="${c.placeholder}" onblur="salvarObsC('${c.id}',this.value)">${S.d.obsC[c.id]}</textarea>`:''}
+      </div>`;
+    });
+
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${avaliados>=7?'':'disabled'}>${avaliados>=7?'Continuar →':`Avalie mais ${7-avaliados} critério(s)`}</button></div>`;
+  }
+
+  // ── 4: Documentação ───────────────────────────────────────────────
+  else if(s===4){
+    h+=`<div class="section-eyebrow">Etapa 5 de 5 — Documentação</div>
+    <div class="section-title">Documentação disponível</div>
+    <div class="section-sub">Marque os documentos que foram verificados nesta investigação</div>`;
+
+    DOCS_LIST.forEach(doc=>{
+      const v=S.d.docs[doc.id];
+      h+=`<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="setDoc('${doc.id}',${v?'null':'true'})">
+        <div style="width:24px;height:24px;border-radius:6px;border:${v?'none':'1.5px solid #E5E5EA'};background:${v?'#FF6B35':'#F9F9F9'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;color:#fff">${v?'✓':''}</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:${v?'#1C1C1E':'#8E8E93'}">${doc.label}</div>
+          <div style="font-size:11px;color:#8E8E93;margin-top:2px">${doc.hint}</div>
+        </div>
+      </div>`;
+    });
+
+    h+=`<div class="input-card" style="margin-top:4px">
+      <label class="input-label">Observações gerais / pendências</label>
+      <textarea id="f-obs" class="input-field" placeholder="Documentos solicitados mas não recebidos, pendências da investigação, informações adicionais relevantes…" onblur="salvar('obsGeral',this.value)">${S.d.obsGeral}</textarea>
+    </div>`;
+
+    const docsOk=Object.values(S.d.docs).filter(v=>v).length;
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()">Ver conclusão →</button></div>`;
+  }
+
+  // ── 5: Conclusão ──────────────────────────────────────────────────
+  else if(s===5){
+    const res=calcNexo();
+    const vals=Object.values(S.d.crit);
+    const nOk=vals.filter(v=>v==='ok').length;
+    const nParcial=vals.filter(v=>v==='parcial').length;
+    const nAusente=vals.filter(v=>v==='ausente').length;
+    const score=nOk*2+nParcial;
+    const pct=Math.round((score/18)*100);
+    const docsOk=Object.values(S.d.docs).filter(v=>v).length;
+    const schillingLabel={1:'Grupo I — Causa necessária',2:'Grupo II — Fator contributivo',3:'Grupo III — Concausa'}[S.d.schilling]||'—';
+
+    h+=`<div class="nexo-hero ${res.tipo}">
+      <span class="nexo-emoji">${res.emoji}</span>
+      <div class="nexo-class">Nexo causal — CFM 2.323/2022</div>
+      <div class="nexo-badge">${res.label}</div>
+      <div class="nexo-sub">${res.sub}</div>
+    </div>`;
+
+    h+=`<div class="summary-card">
+      <div class="summary-title">Score dos 9 critérios</div>
+      <div class="score-bar"><div class="score-fill" style="width:${pct}%;background:${pct>=75?'#30D158':pct>=50?'#FF9F0A':'#FF3B30'}"></div></div>
+      <div style="font-size:12px;color:#8E8E93;text-align:right;margin-bottom:8px">${score}/18 pontos (${pct}%)</div>`;
+    CRITERIOS.forEach(c=>{
+      const v=S.d.crit[c.id];
+      const dotCls=v==='ok'?'ok':v==='parcial'?'parcial':v==='ausente'?'ausente':'nd';
+      h+=`<div class="criterio-mini"><div class="dot dot-${dotCls}"></div><span style="color:#3A3A3C">Inciso ${c.num} — ${c.title}</span><span style="margin-left:auto;font-size:11px;color:#8E8E93">${v==='ok'?'✅':v==='parcial'?'⚠️':v==='ausente'?'❌':'—'}</span></div>`;
+    });
+    h+=`</div>`;
+
+    h+=`<div class="summary-card">
+      <div class="summary-title">Resumo do caso</div>
+      <div class="summary-row"><span class="summary-label">Trabalhador</span><span class="summary-val">${S.d.nome||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Cargo / GHE</span><span class="summary-val">${S.d.cargo||'—'}${S.d.setor?' / '+S.d.setor:''}</span></div>
+      <div class="summary-row"><span class="summary-label">CID-10</span><span class="summary-val">${S.d.cid||'—'} ${S.d.cidDesc?'— '+S.d.cidDesc:''}</span></div>
+      <div class="summary-row"><span class="summary-label">Agente suspeito</span><span class="summary-val">${S.d.funcao||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Tempo de exposição</span><span class="summary-val">${S.d.tempoExpAnos?S.d.tempoExpAnos+' anos':'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Schilling</span><span class="summary-val">${schillingLabel}</span></div>
+      <div class="summary-row"><span class="summary-label">LDRT</span><span class="summary-val">${S.d.ldrtConsta==='sim'?'✅ Consta':S.d.ldrtConsta==='nao'?'❌ Não consta':'Não verificado'}</span></div>
+      <div class="summary-row"><span class="summary-label">NTEP</span><span class="summary-val">${S.d.ntepPositivo==='sim'?'✅ Positivo':S.d.ntepPositivo==='nao'?'❌ Negativo':'Não verificado'}</span></div>
+      <div class="summary-row"><span class="summary-label">Documentação</span><span class="summary-val">${docsOk}/7 documentos</span></div>
+      <div class="summary-row"><span class="summary-label">Conclusão</span><span class="summary-val">${res.label}</span></div>
+    </div>`;
+
+    h+=`<div class="summary-card"><div class="summary-title">Ações recomendadas</div>`;
+    res.acoes.forEach(a=>{
+      const p=a.includes('CAT')?'pill-red':a.includes('SINAN')||a.includes('SESMT')?'pill-orange':a.includes('Completar')||a.includes('Solicitar')?'pill-amber':'pill-gray';
+      h+=`<span class="action-pill ${p}">${a}</span>`;
+    });
+    h+=`</div>`;
+
+    h+=`</div><div class="nav-row">
+      <button class="btn-reset" onclick="reiniciar()">🔄 Novo</button>
+      <button class="btn-export" onclick="exportar()">Exportar parecer</button>
+    </div><div style="height:20px"></div>`;
+  }
+
+  if(s<5) h+='</div>';
+  app.innerHTML=h;
+}
+
+function salvarDados0(){
+  S.d.dataAval=document.getElementById('f-data')?.value||S.d.dataAval;
+  S.d.nome=document.getElementById('f-nome')?.value||S.d.nome;
+  S.d.matricula=document.getElementById('f-mat')?.value||S.d.matricula;
+  S.d.cargo=document.getElementById('f-cargo')?.value||S.d.cargo;
+  S.d.setor=document.getElementById('f-setor')?.value||S.d.setor;
+  S.d.medico=document.getElementById('f-med')?.value||S.d.medico;
+  S.d.crm=document.getElementById('f-crm')?.value||S.d.crm;
+}
+function salvarDiag(){
+  S.d.cid=document.getElementById('f-cid')?.value||S.d.cid;
+  S.d.cidDesc=document.getElementById('f-ciddesc')?.value||S.d.cidDesc;
+  S.d.cnae=document.getElementById('f-cnae')?.value||S.d.cnae;
+  S.d.funcao=document.getElementById('f-funcao')?.value||S.d.funcao;
+  S.d.tempoExpAnos=document.getElementById('f-tempo')?.value||S.d.tempoExpAnos;
+  S.d.tempoExpDesc=document.getElementById('f-tempodesc')?.value||S.d.tempoExpDesc;
+}
+
+function reiniciar(){
+  S.step=0;
+  S.d={nome:'',cargo:'',setor:'',matricula:'',dataAval:'',medico:'',crm:'',
+    cid:'',cidDesc:'',cnae:'',funcao:'',tempoExpAnos:'',tempoExpDesc:'',schilling:null,schillingObs:'',
+    ldrtConsta:null,ntepPositivo:null,
+    crit:{c1:null,c2:null,c3:null,c4:null,c5:null,c6:null,c7:null,c8:null,c9:null},
+    obsC:{c1:'',c2:'',c3:'',c4:'',c5:'',c6:'',c7:'',c8:'',c9:''},
+    docs:{gro:null,pcmso:null,ppp:null,laudoAmbiental:null,examesCompl:null,prontuario:null,catEmitida:null},
+    conclusaoNexo:null,acoesProposto:'',obsGeral:''};
+  render();
+}
+
+function exportar(){
+  const res=calcNexo();
+  const d=S.d;
+  const vals=Object.values(d.crit);
+  const nOk=vals.filter(v=>v==='ok').length;
+  const nParcial=vals.filter(v=>v==='parcial').length;
+  const score=nOk*2+nParcial;
+  const pct=Math.round((score/18)*100);
+  const schillingLabel={1:'Grupo I — Causa necessária',2:'Grupo II — Fator contributivo',3:'Grupo III — Concausa'}[d.schilling]||'—';
+  const docsOk=Object.keys(d.docs).filter(k=>d.docs[k]);
+  const docsLabel={gro:'GRO/PGR',pcmso:'PCMSO',ppp:'PPP',laudoAmbiental:'Laudos ambientais',examesCompl:'Exames complementares',prontuario:'Prontuário',catEmitida:'CAT emitida'};
+
+  const critTexto=CRITERIOS.map(c=>{
+    const v=d.crit[c.id];
+    const status=v==='ok'?'[SATISFEITO]':v==='parcial'?'[PARCIAL]':v==='ausente'?'[AUSENTE]':'[NÃO AVALIADO]';
+    const obs=d.obsC[c.id]?`\n     "${d.obsC[c.id]}"` :'';
+    return `  Inciso ${c.num} — ${c.title}\n  ${status}${obs}`;
+  }).join('\n\n');
+
+  const txt=`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARECER TÉCNICO DE NEXO CAUSAL
+Investigação de Doença Ocupacional
+CFM 2.323/2022 — Art. 2º (9 critérios)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Data              : ${d.dataAval||'—'}
+Trabalhador       : ${d.nome||'—'}
+Matrícula         : ${d.matricula||'—'}
+Cargo             : ${d.cargo||'—'}
+Setor / GHE       : ${d.setor||'—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIAGNÓSTICO
+CID-10            : ${d.cid||'—'} — ${d.cidDesc||'—'}
+Agente suspeito   : ${d.funcao||'—'}
+CNAE da empresa   : ${d.cnae||'—'}
+Tempo de exposição: ${d.tempoExpAnos?d.tempoExpAnos+' anos':'—'}
+Descrição exp.    : ${d.tempoExpDesc||'—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLASSIFICAÇÃO
+Schilling         : ${schillingLabel}
+${d.schillingObs?`Justificativa     : ${d.schillingObs}`:''}
+LDRT (1.339/99)   : ${d.ldrtConsta==='sim'?'Consta':d.ldrtConsta==='nao'?'Não consta':'Não verificado'}
+NTEP              : ${d.ntepPositivo==='sim'?'Positivo':d.ntepPositivo==='nao'?'Negativo':'Não verificado'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OS 9 CRITÉRIOS — ART. 2º CFM 2.323/2022
+Score: ${score}/18 pontos (${pct}%)
+
+${critTexto}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DOCUMENTAÇÃO VERIFICADA (${docsOk.length}/7)
+${docsOk.length>0?docsOk.map(k=>`  ✓ ${docsLabel[k]}`).join('\n'):'  Nenhuma documentação verificada'}
+${d.obsGeral?`\nPendências / Obs:\n  ${d.obsGeral}`:''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONCLUSÃO: ${res.label.toUpperCase()}
+
+${res.conclusao}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AÇÕES RECOMENDADAS
+${res.acoes.map((a,i)=>`  ${i+1}. ${a}`).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Médico investigador: ${d.medico||'_________________________'}
+CRM               : ${d.crm||'____________'}
+Assinatura        : _________________________
+Data              : ${d.dataAval||'___/___/______'}
+
+Base legal: Resolução CFM nº 2.323, de 06/10/2022
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  document.getElementById('modal-body').textContent=txt;
+  document.getElementById('modal').classList.add('show');
+}
+
+function fecharModal(){document.getElementById('modal').classList.remove('show');}
+function copiar(){
+  const txt=document.getElementById('modal-body').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('.modal-btn.primary');
+    btn.textContent='✅ Copiado!';
+    setTimeout(()=>{btn.textContent='📋 Copiar para área de transferência';},2000);
+  });}
+}
+
+render();
+</script>
+</body>
+</html>
