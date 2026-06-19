@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Restrição">
+<title>Restrição Ocupacional</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F2F7;color:#1C1C1E;min-height:100vh;padding-bottom:48px}
+.header{background:#1C1C1E;padding:16px 20px 14px;position:sticky;top:0;z-index:10}
+.header-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8E8E93;text-transform:uppercase;margin-bottom:4px}
+.header-title{font-size:20px;font-weight:700;color:#fff}
+.header-sub{font-size:12px;color:#636366;margin-top:3px}
+.progress-track{height:2px;background:#3A3A3C;margin-top:12px;border-radius:1px;overflow:hidden}
+.progress-fill{height:100%;background:#BF5AF2;border-radius:1px;transition:width 0.35s}
+.step-row{display:flex;gap:4px;margin-top:10px;flex-wrap:wrap}
+.step-pip{width:6px;height:6px;border-radius:50%;background:#3A3A3C;flex-shrink:0;transition:all 0.2s}
+.step-pip.active{background:#BF5AF2;width:18px;border-radius:3px}
+.step-pip.done{background:#30D158}
+.content{padding:20px 16px 0}
+.section-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.1em;color:#8E8E93;text-transform:uppercase;margin-bottom:8px}
+.section-title{font-size:22px;font-weight:700;color:#1C1C1E;letter-spacing:-0.4px;margin-bottom:4px;line-height:1.2}
+.section-sub{font-size:14px;color:#8E8E93;margin-bottom:16px;line-height:1.5}
+.input-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px}
+.input-label{font-size:12px;font-weight:600;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:block}
+.input-field{width:100%;padding:11px 14px;border:1px solid #E5E5EA;border-radius:10px;font-size:15px;color:#1C1C1E;background:#F9F9F9;outline:none;-webkit-appearance:none}
+.input-field:focus{border-color:#BF5AF2;background:#fff}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+textarea.input-field{resize:none;min-height:72px;line-height:1.5}
+select.input-field{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-color:#F9F9F9;padding-right:36px}
+.cid-chip{display:inline-flex;align-items:center;gap:6px;background:#F0EAFF;border:1px solid #BF5AF2;border-radius:20px;padding:5px 12px;font-size:13px;font-weight:600;color:#6B1FAF;margin:4px 4px 4px 0;cursor:pointer}
+.cid-chip .rm{font-size:14px;color:#BF5AF2}
+.alert{border-radius:12px;padding:11px 13px;font-size:13px;margin:8px 0;display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+.alert-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.alert-purple{background:#F5F0FF;border-left:3px solid #BF5AF2;color:#4A1A80}
+.alert-amber{background:#FFF8EE;border-left:3px solid #FF9F0A;color:#7A4A00}
+.alert-green{background:#F0FFF4;border-left:3px solid #30D158;color:#1A5C2E}
+.alert-gray{background:#F2F2F7;border-left:3px solid #8E8E93;color:#3A3A3C}
+/* Grupos de restrição */
+.grupo{background:#fff;border-radius:14px;margin-bottom:10px;overflow:hidden}
+.grupo-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:0.5px solid #F2F2F7}
+.grupo-title{font-size:14px;font-weight:700;color:#1C1C1E;display:flex;align-items:center;gap:8px}
+.grupo-count{font-size:11px;font-weight:700;background:#BF5AF2;color:#fff;border-radius:10px;padding:2px 7px}
+.grupo-count.zero{background:#E5E5EA;color:#8E8E93}
+.grupo-chevron{font-size:12px;color:#8E8E93;transition:transform 0.2s}
+.grupo-chevron.open{transform:rotate(180deg)}
+.grupo-body{padding:0 16px 4px}
+/* Item de restrição */
+.rest-item{border-bottom:0.5px solid #F2F2F7;padding:12px 0}
+.rest-item:last-child{border-bottom:none}
+.rest-top{display:flex;align-items:flex-start;gap:10px}
+.rest-check{width:24px;height:24px;border-radius:6px;border:2px solid #E5E5EA;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;margin-top:1px;background:#F9F9F9}
+.rest-check.ativo{background:#BF5AF2;border-color:#BF5AF2;color:#fff}
+.rest-check.sugerido{background:#F0EAFF;border-color:#BF5AF2}
+.rest-label{font-size:13px;color:#1C1C1E;line-height:1.4;flex:1;cursor:pointer}
+.rest-label.ativo{font-weight:600;color:#1C1C1E}
+.rest-label.sugerido{color:#6B1FAF}
+.rest-detail{margin-top:10px;padding:10px;background:#F9F9F9;border-radius:10px;display:flex;flex-direction:column;gap:8px}
+.rest-tipo-row{display:flex;gap:6px}
+.tipo-btn{flex:1;padding:8px;border-radius:8px;border:1px solid #E5E5EA;background:#fff;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.15s;color:#8E8E93}
+.tipo-btn.temp.sel{background:#FFF8EE;border-color:#FF9F0A;color:#CC7A00}
+.tipo-btn.def.sel{background:#FFF1F0;border-color:#FF3B30;color:#CC1800}
+.prazo-row{display:flex;gap:6px;align-items:center}
+.prazo-field{flex:1;padding:8px 10px;border:1px solid #E5E5EA;border-radius:8px;font-size:13px;background:#fff;color:#1C1C1E;outline:none;-webkit-appearance:none}
+.prazo-field:focus{border-color:#BF5AF2}
+/* Botões nav */
+.nav-row{display:flex;gap:10px;padding:16px 16px 0}
+.btn-back{background:#F2F2F7;color:#1C1C1E;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-back:active{background:#E5E5EA}
+.btn-next{flex:1;background:#BF5AF2;color:#fff;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-next:active{background:#9A3FCC}
+.btn-next:disabled{background:#C7C7CC;cursor:default}
+.btn-export{flex:1;background:#1C1C1E;color:#fff;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-reset{background:#F2F2F7;color:#8E8E93;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer}
+/* Resultado */
+.result-card{border-radius:16px;padding:18px;margin-bottom:10px;background:linear-gradient(135deg,#F5F0FF,#E8D8FF);border:1px solid #BF5AF2}
+.result-badge{font-size:22px;font-weight:800;color:#4A1A80;margin-bottom:6px;display:block}
+.result-sub{font-size:13px;color:#6B1FAF;line-height:1.5}
+.rest-final-item{background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:7px;border-left:3px solid #BF5AF2}
+.rest-final-temp{border-left-color:#FF9F0A}
+.rest-final-def{border-left-color:#FF3B30}
+.rest-final-label{font-size:13px;font-weight:600;color:#1C1C1E;margin-bottom:4px}
+.rest-final-meta{font-size:11px;color:#8E8E93}
+.summary-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px}
+.summary-title{font-size:12px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.summary-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid #F2F2F7;font-size:13px;gap:10px}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:#8E8E93;flex-shrink:0}
+.summary-val{font-weight:600;color:#1C1C1E;text-align:right}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#1C1C1E;border-radius:20px 20px 0 0;padding:22px 18px 44px;width:100%;max-height:85vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:#3A3A3C;border-radius:2px;margin:0 auto 18px}
+.modal-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.modal-sub{font-size:12px;color:#636366;margin-bottom:14px}
+.modal-body{font-size:11px;color:#EBEBF5;line-height:1.7;white-space:pre-wrap;font-family:'Courier New',monospace;background:#2C2C2E;border-radius:10px;padding:13px;margin-bottom:10px}
+.modal-btn{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.modal-btn.primary{background:#BF5AF2;color:#fff}
+.modal-btn.secondary{background:#2C2C2E;color:#fff}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-eyebrow">NR-7 · Medicina do Trabalho</div>
+  <div class="header-title">Restrição Ocupacional</div>
+  <div class="header-sub">Documentação estruturada de limitações funcionais</div>
+  <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+  <div class="step-row" id="steps"></div>
+</div>
+<div id="app"></div>
+<div class="modal-overlay" id="modal" onclick="fecharModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Documento de Restrição Ocupacional</div>
+    <div class="modal-sub">Para registro no prontuário e comunicação ao SESMT</div>
+    <div class="modal-body" id="modal-body"></div>
+    <button class="modal-btn primary" onclick="copiar()">📋 Copiar para área de transferência</button>
+    <button class="modal-btn secondary" onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
+<script>
+const ETAPAS = ['Dados','Diagnóstico','Restrições','Prazo/Tipo','Documento'];
+
+// ── LISTA COMPLETA DE RESTRIÇÕES ──────────────────────────────────────
+const RESTRICOES = [
+  // Esforço físico / musculoesquelético
+  {id:'r01', grupo:'Esforço físico', label:'Levar, puxar ou empurrar mais de 5 Kg'},
+  {id:'r02', grupo:'Esforço físico', label:'Levar, puxar ou empurrar mais de 12,5 Kg'},
+  {id:'r03', grupo:'Esforço físico', label:'Levar, puxar ou empurrar mais de 25 Kg'},
+  {id:'r04', grupo:'Esforço físico', label:'Esforços maiores membros superiores (carregar, levantar, empurrar, sustentar peso)'},
+  {id:'r05', grupo:'Esforço físico', label:'Evitar esforço de membros inferiores — agachamento e flexões'},
+  {id:'r06', grupo:'Esforço físico', label:'Evitar esforço físico intenso e extra-habitual como aqueles que podem ocorrer em emergências operacionais'},
+  {id:'r07', grupo:'Esforço físico', label:'Realizar força de preensão'},
+  {id:'r08', grupo:'Esforço físico', label:'Abrir e fechar válvulas'},
+  // Mobilidade / postura
+  {id:'r09', grupo:'Mobilidade e postura', label:'Caminhar a longas distâncias ou demoradamente'},
+  {id:'r10', grupo:'Mobilidade e postura', label:'Caminhar a passos largos ou corridas'},
+  {id:'r11', grupo:'Mobilidade e postura', label:'Curvar e/ou agachar frequentemente ou repetidamente'},
+  {id:'r12', grupo:'Mobilidade e postura', label:'Curvar e/ou virar frequentemente ou repetidamente'},
+  {id:'r13', grupo:'Mobilidade e postura', label:'Esforços e movimentação frequentes ou bruscas de coluna cervical (pescoço)'},
+  {id:'r14', grupo:'Mobilidade e postura', label:'Esforços e movimentação frequentes ou bruscas de coluna lombosacra'},
+  {id:'r15', grupo:'Mobilidade e postura', label:'Elevar membros superiores acima do nível do ombro'},
+  {id:'r16', grupo:'Mobilidade e postura', label:'Trabalhar sempre em pé'},
+  {id:'r17', grupo:'Mobilidade e postura', label:'Trabalhar sempre sentado'},
+  // Altura e trabalho em risco
+  {id:'r18', grupo:'Altura e risco', label:'Subir escadas'},
+  {id:'r19', grupo:'Altura e risco', label:'Subir escadas marinheiro'},
+  {id:'r20', grupo:'Altura e risco', label:'Subir escadas portáteis (escadotes)'},
+  {id:'r21', grupo:'Altura e risco', label:'Trabalhar em altura: atividade executada acima de 2,00 m do nível inferior, onde haja risco de queda'},
+  {id:'r22', grupo:'Altura e risco', label:'Trabalhar em locais elevados'},
+  {id:'r23', grupo:'Altura e risco', label:'Trabalhar em espaços confinados'},
+  {id:'r24', grupo:'Altura e risco', label:'Trabalhar em condições hiperbáricas'},
+  {id:'r25', grupo:'Altura e risco', label:'Trabalhar próximo a equipamentos perigosos e/ou energizados'},
+  // Exposições ambientais
+  {id:'r26', grupo:'Exposições ambientais', label:'Exposição ao ruído'},
+  {id:'r27', grupo:'Exposições ambientais', label:'Exposição ao calor'},
+  {id:'r28', grupo:'Exposições ambientais', label:'Exposição ao frio'},
+  {id:'r29', grupo:'Exposições ambientais', label:'Exposição solar'},
+  {id:'r30', grupo:'Exposições ambientais', label:'Exposição a aerodispersóides'},
+  {id:'r31', grupo:'Exposições ambientais', label:'Exposição a irritantes respiratórios'},
+  {id:'r32', grupo:'Exposições ambientais', label:'Exposição a irritantes da pele'},
+  {id:'r33', grupo:'Exposições ambientais', label:'Exposição a cloro e derivados'},
+  {id:'r34', grupo:'Exposições ambientais', label:'Exposição a hepatotóxicos'},
+  {id:'r35', grupo:'Exposições ambientais', label:'Exposição a nefrotóxicos'},
+  {id:'r36', grupo:'Exposições ambientais', label:'Exposição a neurotóxicos'},
+  {id:'r37', grupo:'Exposições ambientais', label:'Exposição a mielotóxicos'},
+  {id:'r38', grupo:'Exposições ambientais', label:'Exposição a campos eletromagnéticos'},
+  {id:'r39', grupo:'Exposições ambientais', label:'Trabalhar exposto/a à radiações ionizantes'},
+  {id:'r40', grupo:'Exposições ambientais', label:'Trabalhar exposto/a à radiações não ionizantes'},
+  {id:'r41', grupo:'Exposições ambientais', label:'Trabalhar exposto/a à vibração'},
+  {id:'r42', grupo:'Exposições ambientais', label:'Ambientes úmidos'},
+  {id:'r43', grupo:'Exposições ambientais', label:'Atividade em área industrial'},
+  // Turnos e condições de trabalho
+  {id:'r44', grupo:'Turnos e condições', label:'Trabalhar em horário noturno'},
+  {id:'r45', grupo:'Turnos e condições', label:'Trabalhar por turnos'},
+  {id:'r46', grupo:'Turnos e condições', label:'Conduzir veículos'},
+  // EPIs e equipamentos
+  {id:'r47', grupo:'EPIs e equipamentos', label:'Uso de EPIs'},
+  {id:'r48', grupo:'EPIs e equipamentos', label:'Utilizar aparelhos de proteção respiratória com pressão negativa'},
+  {id:'r49', grupo:'EPIs e equipamentos', label:'Utilizar aparelhos de proteção respiratória com pressão positiva'},
+  // Brigada
+  {id:'r50', grupo:'Brigada de incêndio', label:'Liberado sem restrições para participação na Brigada'},
+  {id:'r51', grupo:'Brigada de incêndio', label:'Participação na Brigada (Apto com restrição)'},
+  {id:'r52', grupo:'Brigada de incêndio', label:'Participação na Brigada (Inapto Temporário)'},
+  {id:'r53', grupo:'Brigada de incêndio', label:'Participação na Brigada (Inapto Definitivo)'},
+  // Outras
+  {id:'r54', grupo:'Outras', label:'PPD — Pessoa Portadora de Deficiência'},
+];
+
+// ── MAPA CID → RESTRIÇÕES SUGERIDAS ──────────────────────────────────
+const CID_MAP = {
+  // Coluna / musculoesquelético
+  'M40':['r11','r12','r13','r14','r16'],
+  'M41':['r11','r12','r13','r14','r16'],
+  'M42':['r11','r12','r13','r14','r16'],
+  'M43':['r11','r12','r13','r14'],
+  'M47':['r11','r12','r13','r14','r16'],
+  'M48':['r11','r12','r13','r14'],
+  'M50':['r13'],
+  'M51':['r11','r12','r14'],
+  'M54':['r11','r12','r14','r16'],
+  // MMSS / ombro / cotovelo / punho
+  'M65':['r04','r07','r15'],
+  'M70':['r04','r07','r15'],
+  'M75':['r04','r15'],
+  'M77':['r07','r04'],
+  'M79':['r04','r07'],
+  // MMII / joelho / tornozelo
+  'M17':['r05','r09','r10','r11','r18','r19','r20'],
+  'M23':['r05','r09','r11','r18'],
+  'M25':['r05','r09'],
+  // Cardiopatia
+  'I10':['r06'],
+  'I20':['r06','r27'],
+  'I21':['r06','r21','r22','r23','r27'],
+  'I25':['r06','r27'],
+  'I48':['r06'],
+  'I50':['r06','r16','r27'],
+  // Respiratório / pulmonar
+  'J45':['r30','r31','r32','r33','r48'],
+  'J44':['r30','r31','r43','r48'],
+  'J30':['r30','r31','r42'],
+  // Neurológico / epilepsia / vertigem
+  'G40':['r21','r22','r18','r19','r20','r25','r46'],
+  'H81':['r21','r22','r18','r19','r20'],
+  'R42':['r21','r22','r18'],
+  // Diabetes
+  'E10':['r27','r28','r46'],
+  'E11':['r27','r28','r46'],
+  'E14':['r27','r28'],
+  // Saúde mental
+  'F32':['r06','r44','r45','r46'],
+  'F33':['r06','r44','r45','r46'],
+  'F41':['r06','r44','r45'],
+  'F43':['r06','r44'],
+  'F10':['r46','r25','r21','r22'],
+  // Dermatológico
+  'L23':['r32','r33','r39','r42'],
+  'L24':['r32','r33','r42'],
+  'L50':['r32','r42'],
+  // Hepático
+  'K70':['r34'],
+  'K74':['r34'],
+  'B18':['r34'],
+  // Renal
+  'N18':['r35'],
+  // Auditivo
+  'H90':['r26'],
+  'H91':['r26'],
+  // Pós-operatório
+  'Z96':['r01','r02','r03','r04','r05','r18','r19','r20','r21'],
+  'Z98':['r01','r02','r18','r19','r20'],
+};
+
+const GRUPOS = [...new Set(RESTRICOES.map(r=>r.grupo))];
+
+const S = {
+  step: 0,
+  gruposAbertos: {},
+  d: {
+    nome:'', cargo:'', matricula:'', setor:'', dataAval:'', medico:'', crm:'',
+    cids: [],
+    cidInput: '',
+    selecionadas: {}, // id -> {tipo:'temp'|'def', prazo:'', prazoData:''}
+    obs: '',
+  }
+};
+
+// Inicializa grupos abertos
+GRUPOS.forEach(g=>{ S.gruposAbertos[g] = false; });
+
+function sugeridas(){
+  const ids = new Set();
+  S.d.cids.forEach(cid=>{
+    const base = cid.substring(0,3).toUpperCase();
+    if(CID_MAP[base]) CID_MAP[base].forEach(r=>ids.add(r));
+    if(CID_MAP[cid.toUpperCase()]) CID_MAP[cid.toUpperCase()].forEach(r=>ids.add(r));
+  });
+  return ids;
+}
+
+function toggleRestricao(id){
+  if(S.d.selecionadas[id]){
+    delete S.d.selecionadas[id];
+  } else {
+    S.d.selecionadas[id] = {tipo:'temp', prazo:'', prazoData:''};
+  }
+  renderEtapa();
+}
+
+function setTipo(id, tipo){
+  if(S.d.selecionadas[id]) S.d.selecionadas[id].tipo = tipo;
+  renderEtapa();
+}
+
+function setPrazo(id, val){
+  if(S.d.selecionadas[id]) S.d.selecionadas[id].prazo = val;
+}
+
+function setPrazoData(id, val){
+  if(S.d.selecionadas[id]) S.d.selecionadas[id].prazoData = val;
+}
+
+function adicionarCID(){
+  const v = S.d.cidInput.trim().toUpperCase();
+  if(v.length >= 3 && !S.d.cids.includes(v)){
+    S.d.cids.push(v);
+    S.d.cidInput = '';
+    // Auto-seleciona sugeridas
+    const base = v.substring(0,3);
+    if(CID_MAP[base]){
+      CID_MAP[base].forEach(rid=>{
+        if(!S.d.selecionadas[rid]) S.d.selecionadas[rid]={tipo:'temp',prazo:'',prazoData:''};
+      });
+      // Abre grupos relevantes
+      CID_MAP[base].forEach(rid=>{
+        const r = RESTRICOES.find(x=>x.id===rid);
+        if(r) S.gruposAbertos[r.grupo]=true;
+      });
+    }
+  }
+  renderEtapa();
+}
+
+function removerCID(cid){
+  S.d.cids = S.d.cids.filter(c=>c!==cid);
+  renderEtapa();
+}
+
+function toggleGrupo(g){
+  S.gruposAbertos[g] = !S.gruposAbertos[g];
+  renderEtapa();
+}
+
+function salvar(k,v){ S.d[k]=v; }
+function avancar(){ S.step=Math.min(S.step+1,ETAPAS.length-1); render(); }
+function voltar(){ S.step=Math.max(S.step-1,0); render(); }
+function render(){ renderSteps(); renderEtapa(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function renderSteps(){
+  const pct=(S.step/(ETAPAS.length-1))*100;
+  document.getElementById('prog').style.width=pct+'%';
+  let h='';
+  ETAPAS.forEach((l,i)=>{
+    const cls=i<S.step?'done':i===S.step?'active':'';
+    h+=`<div class="step-pip ${cls}" title="${l}"></div>`;
+  });
+  document.getElementById('steps').innerHTML=h;
+}
+
+function renderEtapa(){
+  renderSteps();
+  const app=document.getElementById('app');
+  const s=S.step;
+  let h='<div class="content">';
+
+  // ── 0: Dados ──────────────────────────────────────────────────────
+  if(s===0){
+    h+=`<div class="section-eyebrow">Etapa 1 de 4</div>
+    <div class="section-title">Dados do trabalhador</div>
+    <div class="section-sub">Identificação para o documento de restrição</div>
+    <div class="input-card">
+      <label class="input-label">Data da avaliação</label>
+      <input id="f-data" class="input-field" type="date" value="${S.d.dataAval}" onchange="S.d.dataAval=this.value">
+    </div>
+    <div class="input-card">
+      <label class="input-label">Nome do trabalhador</label>
+      <input id="f-nome" class="input-field" type="text" placeholder="Nome completo" value="${S.d.nome}" onblur="salvar('nome',this.value)">
+    </div>
+    <div class="input-card">
+      <div class="input-row">
+        <div><label class="input-label">Matrícula</label><input id="f-mat" class="input-field" type="text" placeholder="Opcional" value="${S.d.matricula}" onblur="salvar('matricula',this.value)"></div>
+        <div><label class="input-label">Cargo</label><input id="f-cargo" class="input-field" type="text" placeholder="Ex: Operador" value="${S.d.cargo}" onblur="salvar('cargo',this.value)"></div>
+      </div>
+    </div>
+    <div class="input-card">
+      <label class="input-label">Setor / GHE</label>
+      <input id="f-setor" class="input-field" type="text" placeholder="Setor ou Grupo Homogêneo de Exposição" value="${S.d.setor}" onblur="salvar('setor',this.value)">
+    </div>
+    <div class="input-card">
+      <div class="input-row">
+        <div><label class="input-label">Médico</label><input id="f-med" class="input-field" type="text" placeholder="Nome" value="${S.d.medico}" onblur="salvar('medico',this.value)"></div>
+        <div><label class="input-label">CRM</label><input id="f-crm" class="input-field" type="text" placeholder="CRM/UF" value="${S.d.crm}" onblur="salvar('crm',this.value)"></div>
+      </div>
+    </div>`;
+    h+=`</div><div class="nav-row"><button class="btn-next" onclick="salvarDados0();avancar()">Continuar →</button></div>`;
+  }
+
+  // ── 1: Diagnóstico / CID ──────────────────────────────────────────
+  else if(s===1){
+    const sug=sugeridas();
+    h+=`<div class="section-eyebrow">Etapa 2 de 4 — Diagnóstico</div>
+    <div class="section-title">CID-10 do diagnóstico</div>
+    <div class="section-sub">Informe o(s) CID(s). O app sugere as restrições automaticamente baseado no diagnóstico.</div>
+    <div class="input-card">
+      <label class="input-label">Adicionar CID-10</label>
+      <div style="display:flex;gap:8px">
+        <input id="f-cid" class="input-field" type="text" placeholder="Ex: M54, F32, I21…" value="${S.d.cidInput}"
+          oninput="S.d.cidInput=this.value"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarCID()}"
+          style="flex:1">
+        <button onclick="adicionarCID()" style="background:#BF5AF2;color:#fff;border:none;border-radius:10px;padding:0 16px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">+ Adicionar</button>
+      </div>
+      <div style="margin-top:10px;min-height:28px">
+        ${S.d.cids.map(c=>`<span class="cid-chip">${c}<span class="rm" onclick="removerCID('${c}')">✕</span></span>`).join('')}
+        ${S.d.cids.length===0?'<span style="font-size:12px;color:#C7C7CC">Nenhum CID adicionado</span>':''}
+      </div>
+    </div>`;
+    if(S.d.cids.length>0 && sug.size>0){
+      h+=`<div class="alert alert-purple"><span class="alert-icon">✨</span><span><strong>${sug.size} restrição(ões) sugerida(s)</strong> com base nos CIDs informados. Elas serão pré-selecionadas na próxima etapa para confirmação.</span></div>`;
+    }
+    if(S.d.cids.length>0 && sug.size===0){
+      h+=`<div class="alert alert-gray"><span class="alert-icon">ℹ️</span><span>CID sem mapeamento automático. Selecione as restrições manualmente na próxima etapa.</span></div>`;
+    }
+    h+=`<div class="alert alert-amber"><span class="alert-icon">⚠️</span><span>Pode pular esta etapa e selecionar restrições manualmente.</span></div>`;
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()">Continuar →</button></div>`;
+  }
+
+  // ── 2: Seleção de restrições ──────────────────────────────────────
+  else if(s===2){
+    const sug=sugeridas();
+    const nSel=Object.keys(S.d.selecionadas).length;
+    h+=`<div class="section-eyebrow">Etapa 3 de 4 — Restrições</div>
+    <div class="section-title">Selecionar restrições</div>
+    <div class="section-sub">${nSel} selecionada(s)${sug.size>0?' · itens em roxo foram sugeridos pelo CID':''}</div>`;
+    if(sug.size>0) h+=`<div class="alert alert-purple"><span class="alert-icon">✨</span><span>Itens marcados em roxo foram pré-selecionados com base nos CIDs. Confirme, ajuste ou remova conforme avaliação clínica.</span></div>`;
+
+    GRUPOS.forEach(g=>{
+      const itens=RESTRICOES.filter(r=>r.grupo===g);
+      const nGrupoSel=itens.filter(r=>S.d.selecionadas[r.id]).length;
+      const aberto=S.gruposAbertos[g];
+      const icones={'Esforço físico':'💪','Mobilidade e postura':'🚶','Altura e risco':'🪜','Exposições ambientais':'☢️','Turnos e condições':'🕐','EPIs e equipamentos':'🦺','Brigada de incêndio':'🧯','Outras':'📋'};
+      h+=`<div class="grupo">
+        <div class="grupo-header" onclick="toggleGrupo('${g}')">
+          <span class="grupo-title">${icones[g]||'•'} ${g}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="grupo-count ${nGrupoSel===0?'zero':''}">${nGrupoSel}</span>
+            <span class="grupo-chevron ${aberto?'open':''}">▼</span>
+          </div>
+        </div>`;
+      if(aberto){
+        h+=`<div class="grupo-body">`;
+        itens.forEach(r=>{
+          const ativo=!!S.d.selecionadas[r.id];
+          const ehSug=sug.has(r.id);
+          h+=`<div class="rest-item">
+            <div class="rest-top">
+              <div class="rest-check ${ativo?'ativo':ehSug&&!ativo?'sugerido':''}" onclick="toggleRestricao('${r.id}')">
+                ${ativo?'✓':ehSug&&!ativo?'·':''}
+              </div>
+              <span class="rest-label ${ativo?'ativo':ehSug?'sugerido':''}" onclick="toggleRestricao('${r.id}')">${r.label}</span>
+            </div>
+          </div>`;
+        });
+        h+=`</div>`;
+      }
+      h+=`</div>`;
+    });
+
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${nSel>0?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 3: Prazo e tipo de cada restrição ─────────────────────────────
+  else if(s===3){
+    const sels=Object.keys(S.d.selecionadas);
+    h+=`<div class="section-eyebrow">Etapa 4 de 4 — Tipo e prazo</div>
+    <div class="section-title">Definir tipo e prazo</div>
+    <div class="section-sub">Para cada restrição: temporária (com prazo) ou definitiva.</div>`;
+
+    sels.forEach(id=>{
+      const r=RESTRICOES.find(x=>x.id===id);
+      if(!r) return;
+      const sel=S.d.selecionadas[id];
+      h+=`<div class="input-card">
+        <div style="font-size:13px;font-weight:600;color:#1C1C1E;margin-bottom:10px;line-height:1.4">${r.label}</div>
+        <div class="rest-tipo-row">
+          <button class="tipo-btn temp ${sel.tipo==='temp'?'sel':''}" onclick="setTipo('${id}','temp')">⏱ Temporária</button>
+          <button class="tipo-btn def ${sel.tipo==='def'?'sel':''}" onclick="setTipo('${id}','def')">🔒 Definitiva</button>
+        </div>
+        ${sel.tipo==='temp'?`<div class="prazo-row" style="margin-top:8px">
+          <select class="prazo-field" onchange="setPrazo('${id}',this.value)">
+            <option value="" ${!sel.prazo?'selected':''}>Selecione o prazo…</option>
+            <option value="7d" ${sel.prazo==='7d'?'selected':''}>7 dias</option>
+            <option value="15d" ${sel.prazo==='15d'?'selected':''}>15 dias</option>
+            <option value="30d" ${sel.prazo==='30d'?'selected':''}>30 dias</option>
+            <option value="60d" ${sel.prazo==='60d'?'selected':''}>60 dias</option>
+            <option value="90d" ${sel.prazo==='90d'?'selected':''}>90 dias</option>
+            <option value="6m" ${sel.prazo==='6m'?'selected':''}>6 meses</option>
+            <option value="1a" ${sel.prazo==='1a'?'selected':''}>1 ano</option>
+            <option value="data" ${sel.prazo==='data'?'selected':''}>Até data específica</option>
+          </select>
+          ${sel.prazo==='data'?`<input type="date" class="prazo-field" value="${sel.prazoData||''}" onchange="setPrazoData('${id}',this.value)" style="flex:1">`:''} 
+        </div>`:''}
+      </div>`;
+    });
+
+    h+=`<div class="input-card">
+      <label class="input-label">Observações adicionais</label>
+      <textarea id="f-obs" class="input-field" placeholder="Condicionantes específicas, orientações ao SESMT…" onblur="salvar('obs',this.value)">${S.d.obs}</textarea>
+    </div>`;
+
+    const tudo=sels.every(id=>{
+      const sel=S.d.selecionadas[id];
+      return sel.tipo==='def'||(sel.tipo==='temp'&&sel.prazo&&(sel.prazo!=='data'||sel.prazoData));
+    });
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${tudo?'':'disabled'}>Ver documento →</button></div>`;
+  }
+
+  // ── 4: Documento final ────────────────────────────────────────────
+  else if(s===4){
+    const sels=Object.keys(S.d.selecionadas);
+    const temps=sels.filter(id=>S.d.selecionadas[id].tipo==='temp');
+    const defs=sels.filter(id=>S.d.selecionadas[id].tipo==='def');
+
+    const prazoLabel=(sel)=>{
+      const map={'7d':'7 dias','15d':'15 dias','30d':'30 dias','60d':'60 dias','90d':'90 dias','6m':'6 meses','1a':'1 ano','data':`até ${sel.prazoData||'data não definida'}`};
+      return map[sel.prazo]||sel.prazo;
+    };
+
+    h+=`<div class="result-card">
+      <span class="result-badge">📋 ${sels.length} restrição(ões) documentada(s)</span>
+      <div class="result-sub">${temps.length} temporária(s) · ${defs.length} definitiva(s)</div>
+    </div>`;
+
+    if(temps.length>0){
+      h+=`<div class="summary-card"><div class="summary-title">⏱ Restrições temporárias</div>`;
+      temps.forEach(id=>{
+        const r=RESTRICOES.find(x=>x.id===id);
+        const sel=S.d.selecionadas[id];
+        h+=`<div class="rest-final-item rest-final-temp">
+          <div class="rest-final-label">${r.label}</div>
+          <div class="rest-final-meta">Temporária · ${prazoLabel(sel)}</div>
+        </div>`;
+      });
+      h+=`</div>`;
+    }
+
+    if(defs.length>0){
+      h+=`<div class="summary-card"><div class="summary-title">🔒 Restrições definitivas</div>`;
+      defs.forEach(id=>{
+        const r=RESTRICOES.find(x=>x.id===id);
+        h+=`<div class="rest-final-item rest-final-def">
+          <div class="rest-final-label">${r.label}</div>
+          <div class="rest-final-meta">Definitiva</div>
+        </div>`;
+      });
+      h+=`</div>`;
+    }
+
+    h+=`<div class="summary-card">
+      <div class="summary-title">Dados da avaliação</div>
+      <div class="summary-row"><span class="summary-label">Trabalhador</span><span class="summary-val">${S.d.nome||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Matrícula</span><span class="summary-val">${S.d.matricula||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Cargo</span><span class="summary-val">${S.d.cargo||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Setor / GHE</span><span class="summary-val">${S.d.setor||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">CIDs</span><span class="summary-val">${S.d.cids.join(', ')||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Data</span><span class="summary-val">${S.d.dataAval||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Médico</span><span class="summary-val">${S.d.medico||'—'}${S.d.crm?' · '+S.d.crm:''}</span></div>
+    </div>`;
+
+    h+=`<div class="alert alert-amber"><span class="alert-icon">⚠️</span><span>Comunique as restrições ao SESMT e RH. Registre no prontuário e no sistema corporativo de saúde ocupacional.</span></div>`;
+
+    h+=`</div><div class="nav-row">
+      <button class="btn-reset" onclick="reiniciar()">🔄 Novo</button>
+      <button class="btn-export" onclick="exportar()">Exportar documento</button>
+    </div><div style="height:20px"></div>`;
+  }
+
+  if(s<4) h+='</div>';
+  app.innerHTML=h;
+}
+
+function salvarDados0(){
+  S.d.dataAval=document.getElementById('f-data')?.value||S.d.dataAval;
+  S.d.nome=document.getElementById('f-nome')?.value||S.d.nome;
+  S.d.matricula=document.getElementById('f-mat')?.value||S.d.matricula;
+  S.d.cargo=document.getElementById('f-cargo')?.value||S.d.cargo;
+  S.d.setor=document.getElementById('f-setor')?.value||S.d.setor;
+  S.d.medico=document.getElementById('f-med')?.value||S.d.medico;
+  S.d.crm=document.getElementById('f-crm')?.value||S.d.crm;
+}
+
+function reiniciar(){
+  S.step=0;
+  S.d={nome:'',cargo:'',matricula:'',setor:'',dataAval:'',medico:'',crm:'',
+    cids:[],cidInput:'',selecionadas:{},obs:''};
+  GRUPOS.forEach(g=>{ S.gruposAbertos[g]=false; });
+  render();
+}
+
+function exportar(){
+  const d=S.d;
+  const sels=Object.keys(d.selecionadas);
+  const temps=sels.filter(id=>d.selecionadas[id].tipo==='temp');
+  const defs=sels.filter(id=>d.selecionadas[id].tipo==='def');
+  const prazoLabel=(sel)=>{
+    const map={'7d':'7 dias','15d':'15 dias','30d':'30 dias','60d':'60 dias','90d':'90 dias','6m':'6 meses','1a':'1 ano','data':`até ${sel.prazoData||'data não definida'}`};
+    return map[sel.prazo]||sel.prazo;
+  };
+
+  const linhaTemps=temps.map((id,i)=>{
+    const r=RESTRICOES.find(x=>x.id===id);
+    return `  ${i+1}. [TEMPORÁRIA · ${prazoLabel(d.selecionadas[id])}]\n     ${r.label}`;
+  }).join('\n');
+
+  const linhaDefs=defs.map((id,i)=>{
+    const r=RESTRICOES.find(x=>x.id===id);
+    return `  ${i+1}. [DEFINITIVA]\n     ${r.label}`;
+  }).join('\n');
+
+  const txt=`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DOCUMENTO DE RESTRIÇÃO OCUPACIONAL
+Medicina do Trabalho — NR-7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Data da avaliação : ${d.dataAval||'—'}
+Trabalhador       : ${d.nome||'—'}
+Matrícula         : ${d.matricula||'—'}
+Cargo             : ${d.cargo||'—'}
+Setor / GHE       : ${d.setor||'—'}
+CID-10            : ${d.cids.join(', ')||'—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESTRIÇÕES DOCUMENTADAS (${sels.length} total)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${temps.length>0?`TEMPORÁRIAS (${temps.length})\n${linhaTemps}\n`:''}
+${defs.length>0?`DEFINITIVAS (${defs.length})\n${linhaDefs}\n`:''}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${d.obs?`OBSERVAÇÕES\n${d.obs}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`:''}
+Médico            : ${d.medico||'_________________________'}
+CRM               : ${d.crm||'____________'}
+Assinatura        : _________________________
+Data              : ${d.dataAval||'___/___/______'}
+
+⚠️  Comunicar ao SESMT e RH imediatamente.
+    Registrar no prontuário e no sistema
+    corporativo de saúde ocupacional.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  document.getElementById('modal-body').textContent=txt;
+  document.getElementById('modal').classList.add('show');
+}
+
+function fecharModal(){document.getElementById('modal').classList.remove('show');}
+function copiar(){
+  const txt=document.getElementById('modal-body').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('.modal-btn.primary');
+    btn.textContent='✅ Copiado!';
+    setTimeout(()=>{btn.textContent='📋 Copiar para área de transferência';},2000);
+  });}
+}
+
+render();
+</script>
+</body>
+</html>
