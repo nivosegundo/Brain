@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Aptidão">
+<title>Aptidão — Atividade Crítica</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F2F7;color:#1C1C1E;min-height:100vh;padding-bottom:48px}
+.header{background:#1C1C1E;padding:16px 20px 14px;position:sticky;top:0;z-index:10}
+.header-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8E8E93;text-transform:uppercase;margin-bottom:4px}
+.header-title{font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px}
+.header-sub{font-size:12px;color:#636366;margin-top:3px}
+.progress-track{height:2px;background:#3A3A3C;margin-top:12px;border-radius:1px;overflow:hidden}
+.progress-fill{height:100%;background:#0A84FF;border-radius:1px;transition:width 0.35s}
+.step-row{display:flex;align-items:center;gap:4px;margin-top:10px;flex-wrap:wrap}
+.step-pip{width:6px;height:6px;border-radius:50%;background:#3A3A3C;flex-shrink:0;transition:all 0.2s}
+.step-pip.active{background:#0A84FF;width:18px;border-radius:3px}
+.step-pip.done{background:#30D158}
+.content{padding:20px 16px 0}
+.section-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.1em;color:#8E8E93;text-transform:uppercase;margin-bottom:8px}
+.section-title{font-size:22px;font-weight:700;color:#1C1C1E;letter-spacing:-0.4px;margin-bottom:4px;line-height:1.2}
+.section-sub{font-size:14px;color:#8E8E93;margin-bottom:20px;line-height:1.5}
+.input-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px}
+.input-label{font-size:12px;font-weight:600;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:block}
+.input-field{width:100%;padding:11px 14px;border:1px solid #E5E5EA;border-radius:10px;font-size:15px;color:#1C1C1E;background:#F9F9F9;outline:none;transition:border-color 0.15s;-webkit-appearance:none}
+.input-field:focus{border-color:#0A84FF;background:#fff}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+textarea.input-field{resize:none;min-height:72px;line-height:1.5}
+select.input-field{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-color:#F9F9F9;padding-right:36px}
+.nr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.nr-btn{background:#fff;border:2px solid #E5E5EA;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.nr-btn:active{transform:scale(0.97)}
+.nr-btn.nr35.sel{border-color:#FF9F0A;background:#FFF8EE}
+.nr-btn.nr33.sel{border-color:#FF3B30;background:#FFF1F0}
+.nr-btn.nr10.sel{border-color:#FFD60A;background:#FFFBE0}
+.nr-btn.brig.sel{border-color:#30D158;background:#F0FFF4}
+.nr-icon{font-size:28px}
+.nr-label{font-size:13px;font-weight:700;color:#1C1C1E;line-height:1.2}
+.nr-desc{font-size:11px;color:#8E8E93;line-height:1.3}
+.nr-btn.nr35.sel .nr-label{color:#CC7A00}
+.nr-btn.nr33.sel .nr-label{color:#CC1800}
+.nr-btn.nr10.sel .nr-label{color:#997A00}
+.nr-btn.brig.sel .nr-label{color:#1A8C35}
+.crit-block{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px}
+.crit-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #F2F2F7}
+.crit-nr-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.badge-nr35{background:#FFF8EE;color:#CC7A00;border:1px solid #FF9F0A}
+.badge-nr33{background:#FFF1F0;color:#CC1800;border:1px solid #FF3B30}
+.badge-nr10{background:#FFFBE0;color:#997A00;border:1px solid #FFD60A}
+.badge-brig{background:#F0FFF4;color:#1A8C35;border:1px solid #30D158}
+.crit-row{padding:10px 0;border-bottom:0.5px solid #F2F2F7;display:flex;flex-direction:column;gap:8px}
+.crit-row:last-child{border-bottom:none;padding-bottom:0}
+.crit-label{font-size:13px;font-weight:600;color:#1C1C1E;line-height:1.3}
+.crit-tipo{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:10px;display:inline-block;margin-top:2px}
+.tipo-abs{background:#FFEBEB;color:#CC1800}
+.tipo-rel{background:#FFF3E0;color:#CC7A00}
+.crit-opts{display:flex;gap:6px;flex-wrap:wrap}
+.crit-btn{font-size:12px;padding:7px 13px;border-radius:20px;border:1px solid #E5E5EA;background:#F2F2F7;cursor:pointer;color:#3A3A3C;transition:all 0.15s;flex:1;text-align:center}
+.crit-btn:active{transform:scale(0.97)}
+.crit-btn.presente{background:#FFEBEB;border-color:#FF3B30;color:#7A0000;font-weight:700}
+.crit-btn.ausente{background:#E8F9EE;border-color:#30D158;color:#0D4D1F;font-weight:700}
+.crit-btn.controlado{background:#FFF3E0;border-color:#FF9F0A;color:#7A4A00;font-weight:700}
+.veto-banner{background:#FF3B30;border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px}
+.veto-banner-text{color:#fff;font-size:13px;font-weight:600;line-height:1.4}
+.alert{border-radius:12px;padding:11px 13px;font-size:13px;margin:8px 0;display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+.alert-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.alert-red{background:#FFF1F0;border-left:3px solid #FF3B30;color:#8B1A1A}
+.alert-amber{background:#FFF8EE;border-left:3px solid #FF9F0A;color:#7A4A00}
+.alert-green{background:#F0FFF4;border-left:3px solid #30D158;color:#1A5C2E}
+.alert-blue{background:#EEF4FF;border-left:3px solid #0A84FF;color:#003A8C}
+.mets-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.mets-btn{background:#fff;border:2px solid #E5E5EA;border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.15s}
+.mets-btn:active{transform:scale(0.97)}
+.mets-btn.sel{border-color:#0A84FF;background:#EEF4FF}
+.mets-val{font-size:18px;font-weight:800;color:#1C1C1E;display:block}
+.mets-btn.sel .mets-val{color:#0A84FF}
+.mets-label{font-size:10px;color:#8E8E93;display:block;margin-top:2px;line-height:1.3}
+.nav-row{display:flex;gap:10px;padding:16px 16px 0}
+.btn-back{background:#F2F2F7;color:#1C1C1E;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer;min-width:76px}
+.btn-back:active{background:#E5E5EA}
+.btn-next{flex:1;background:#0A84FF;color:#fff;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-next:active{background:#005EC4}
+.btn-next:disabled{background:#C7C7CC;cursor:default}
+.btn-export{flex:1;background:#1C1C1E;color:#fff;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-export:active{background:#3A3A3C}
+.btn-reset{background:#F2F2F7;color:#8E8E93;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer}
+.result-hero{border-radius:16px;padding:22px;margin-bottom:14px;text-align:center}
+.result-hero.apto{background:linear-gradient(135deg,#E8F9EE,#C8F0D5);border:1px solid #30D158}
+.result-hero.apto-rest{background:linear-gradient(135deg,#FFF8EE,#FFE8C0);border:1px solid #FF9F0A}
+.result-hero.inapto-temp{background:linear-gradient(135deg,#FFF4E0,#FFD9A0);border:1px solid #FF9F0A}
+.result-hero.inapto{background:linear-gradient(135deg,#FFF1F0,#FFD0CC);border:1px solid #FF3B30}
+.result-emoji{font-size:44px;margin-bottom:10px;display:block}
+.result-class{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:6px}
+.result-badge{display:inline-block;border-radius:10px;padding:6px 18px;font-size:20px;font-weight:800;letter-spacing:-0.3px;margin-bottom:10px;line-height:1.3}
+.result-sub{font-size:13px;line-height:1.5}
+.result-hero.apto .result-class{color:#1A8C35}.result-hero.apto .result-badge{background:#C8F0D5;color:#0D4D1F}.result-hero.apto .result-sub{color:#0D4D1F}
+.result-hero.apto-rest .result-class{color:#CC7A00}.result-hero.apto-rest .result-badge{background:#FFE8C0;color:#7A4A00}.result-hero.apto-rest .result-sub{color:#7A4A00}
+.result-hero.inapto-temp .result-class{color:#CC7A00}.result-hero.inapto-temp .result-badge{background:#FFD9A0;color:#7A4A00}.result-hero.inapto-temp .result-sub{color:#7A4A00}
+.result-hero.inapto .result-class{color:#CC1800}.result-hero.inapto .result-badge{background:#FFD0CC;color:#7A0000}.result-hero.inapto .result-sub{color:#7A0000}
+.summary-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px}
+.summary-title{font-size:12px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.summary-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:0.5px solid #F2F2F7;font-size:13px;gap:10px}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:#8E8E93;flex-shrink:0}
+.summary-val{font-weight:600;color:#1C1C1E;text-align:right}
+.rest-item{background:#FFF8EE;border-radius:10px;padding:10px 12px;margin-bottom:6px;font-size:13px;color:#7A4A00;border-left:3px solid #FF9F0A;line-height:1.4}
+.justif-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:0.5px solid #F2F2F7;font-size:13px}
+.justif-row:last-child{border-bottom:none}
+.justif-text{color:#3A3A3C;line-height:1.4}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#1C1C1E;border-radius:20px 20px 0 0;padding:22px 18px 44px;width:100%;max-height:82vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:#3A3A3C;border-radius:2px;margin:0 auto 18px}
+.modal-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.modal-sub{font-size:12px;color:#636366;margin-bottom:14px}
+.modal-body{font-size:11px;color:#EBEBF5;line-height:1.7;white-space:pre-wrap;font-family:'Courier New',monospace;background:#2C2C2E;border-radius:10px;padding:13px;margin-bottom:10px}
+.modal-btn{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.modal-btn.primary{background:#0A84FF;color:#fff}
+.modal-btn.secondary{background:#2C2C2E;color:#fff}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-eyebrow">NR-33 · NR-35 · NR-10 · Brigada</div>
+  <div class="header-title">Aptidão — Atividade Crítica</div>
+  <div class="header-sub">Parecer de aptidão para atividades regulamentadas</div>
+  <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+  <div class="step-row" id="steps"></div>
+</div>
+<div id="app"></div>
+<div class="modal-overlay" id="modal" onclick="fecharModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Parecer de Aptidão</div>
+    <div class="modal-sub">Para emissão do ASO — uso médico interno</div>
+    <div class="modal-body" id="modal-body"></div>
+    <button class="modal-btn primary" onclick="copiar()">📋 Copiar para área de transferência</button>
+    <button class="modal-btn secondary" onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
+<script>
+const ETAPAS = ['Dados','Atividades','Avaliação','METs','Resultado'];
+
+const S = {
+  step: 0,
+  d: {
+    nome:'', cargo:'', ghe:'', matricula:'', dataAval:'', medico:'', crm:'',
+    nrs: {nr35:false, nr33:false, nr10:false, brig:false},
+    // critérios: null=não avaliado, 'ausente'=não tem, 'presente'=tem, 'controlado'=tem mas controlado
+    crit: {},
+    mets: null,
+    funcaoBrig: null,
+    obsGeral: '',
+    restricoes: '',
+  }
+};
+
+// ── CRITÉRIOS POR NR ──────────────────────────────────────────────────
+// tipo: 'abs' = veto absoluto | 'rel' = veto relativo (requer análise)
+// nr: array de NRs que este critério afeta
+const CRITERIOS = [
+  // NR-35 e NR-33 compartilhados
+  {id:'epilepsia',     label:'Epilepsia ativa ou mal controlada',         tipo:'abs', nr:['nr35','nr33','nr10'], opts:['ausente','presente','controlado']},
+  {id:'bzd',           label:'Uso de benzodiazepínico regular',           tipo:'abs', nr:['nr35','nr33','nr10'], opts:['ausente','presente']},
+  {id:'opioide',       label:'Uso de opioide ativo',                      tipo:'abs', nr:['nr35','nr33','nr10'], opts:['ausente','presente']},
+  {id:'sedativo',      label:'Outro sedativo / hipnótico ativo',          tipo:'abs', nr:['nr35','nr33'],        opts:['ausente','presente']},
+  // NR-35 específicos
+  {id:'vertigem',      label:'Vertigem / labirintopatia sintomática',     tipo:'abs', nr:['nr35'],              opts:['ausente','presente','controlado']},
+  {id:'acrofobia',     label:'Acrofobia incapacitante',                   tipo:'abs', nr:['nr35'],              opts:['ausente','presente']},
+  {id:'dm_hipo',       label:'Diabetes com hipoglicemia recorrente',      tipo:'abs', nr:['nr35','nr33'],       opts:['ausente','presente','controlado']},
+  {id:'hba1c',         label:'HbA1c > 9% sem controle glicêmico',        tipo:'rel', nr:['nr35','nr33'],       opts:['ausente','presente','controlado']},
+  {id:'cardio_mets',   label:'Cardiopatia com capacidade funcional < 3 METs', tipo:'abs', nr:['nr35','nr33'],  opts:['ausente','presente']},
+  {id:'posop',         label:'Pós-operatório < 30 dias',                 tipo:'abs', nr:['nr35','nr33'],       opts:['ausente','presente']},
+  {id:'imc40',         label:'IMC ≥ 40 (limitação de EPI/cinto)',        tipo:'rel', nr:['nr35'],              opts:['ausente','presente']},
+  {id:'visao',         label:'Déficit visual não corrigido',              tipo:'rel', nr:['nr35','nr10'],       opts:['ausente','presente','controlado']},
+  // NR-33 específicos
+  {id:'claustro',      label:'Claustrofobia incapacitante',               tipo:'abs', nr:['nr33'],              opts:['ausente','presente']},
+  {id:'dpoc',          label:'DPOC grave (VEF1 < 50%)',                   tipo:'abs', nr:['nr33'],              opts:['ausente','presente','controlado']},
+  {id:'ansied_conf',   label:'Ansiedade grave com crise em confinamento', tipo:'abs', nr:['nr33'],              opts:['ausente','presente','controlado']},
+  {id:'iam90',         label:'Pós-IAM < 90 dias',                        tipo:'abs', nr:['nr33','nr35'],       opts:['ausente','presente']},
+  {id:'ic_descomp',    label:'Insuficiência cardíaca descompensada',      tipo:'abs', nr:['nr33','nr35'],       opts:['ausente','presente']},
+  // NR-10 específicos
+  {id:'mp',            label:'Marca-passo cardíaco implantado',           tipo:'rel', nr:['nr10'],              opts:['ausente','presente']},
+  {id:'deficit_motor', label:'Déficit motor significativo em MMSS',       tipo:'rel', nr:['nr10'],              opts:['ausente','presente','controlado']},
+  {id:'tremor',        label:'Tremor essencial significativo',            tipo:'rel', nr:['nr10'],              opts:['ausente','presente','controlado']},
+  {id:'neuro_peri',    label:'Neuropatia periférica grave',               tipo:'rel', nr:['nr10'],              opts:['ausente','presente','controlado']},
+  // Brigada específicos
+  {id:'asma',          label:'Asma brônquica não controlada',             tipo:'abs', nr:['brig'],              opts:['ausente','presente','controlado']},
+  {id:'cardio_brig',   label:'Cardiopatia ativa (angina, arritmia grave)',tipo:'abs', nr:['brig'],              opts:['ausente','presente','controlado']},
+  {id:'scba',          label:'Contraindicação ao uso de SCBA / AR',      tipo:'abs', nr:['brig'],              opts:['ausente','presente']},
+  {id:'psiq_brig',     label:'Transtorno psiquiátrico ativo com instabilidade', tipo:'abs', nr:['brig'],       opts:['ausente','presente','controlado']},
+];
+
+const METS_OPTS = [
+  {val:'<3',  label:'< 3 METs', sub:'Incapacidade grave'},
+  {val:'3-4', label:'3–4 METs', sub:'Muito limitado'},
+  {val:'5-6', label:'5–6 METs', sub:'Limitado'},
+  {val:'7-9', label:'7–9 METs', sub:'Moderado'},
+  {val:'10+', label:'≥ 10 METs',sub:'Bom / excelente'},
+];
+
+const BRIG_FUNCOES = [
+  {id:'operacional', label:'Brigadista operacional', sub:'Combate a incêndio', metsMin:'10+'},
+  {id:'apoio',       label:'Brigadista de apoio',    sub:'Evacuação / suporte', metsMin:'7-9'},
+  {id:'admin',       label:'Brigadista administrativo', sub:'Comunicação / coordenação', metsMin:'5-6'},
+];
+
+// ── CRITÉRIOS RELEVANTES PARA AS NRs SELECIONADAS ────────────────────
+function critRelevantes(){
+  const nrs = Object.keys(S.d.nrs).filter(k=>S.d.nrs[k]);
+  return CRITERIOS.filter(c=>c.nr.some(n=>nrs.includes(n)));
+}
+
+// ── LÓGICA DE CLASSIFICAÇÃO ───────────────────────────────────────────
+function classificar(){
+  const d = S.d;
+  const crit = critRelevantes();
+  const vetosAbs = [];
+  const vetosRel = [];
+  const restricoes = [];
+
+  crit.forEach(c=>{
+    const v = d.crit[c.id];
+    if(v === 'presente'){
+      if(c.tipo === 'abs') vetosAbs.push(c.label);
+      else vetosRel.push(c.label);
+    }
+    if(v === 'controlado' && c.tipo === 'abs'){
+      // abs controlado = inapto temporário — precisa reavaliação
+      vetosAbs.push(`${c.label} (controlado — requer avaliação especializada)`);
+    }
+    if(v === 'controlado' && c.tipo === 'rel'){
+      restricoes.push(`${c.label} — monitorar / restrição específica`);
+    }
+  });
+
+  // METs para brigada
+  let vetoMets = false;
+  let funcaoBrigAprovada = null;
+  if(d.nrs.brig && d.mets){
+    const funcao = BRIG_FUNCOES.find(f=>f.id===d.funcaoBrig);
+    if(funcao){
+      const ordem = ['<3','3-4','5-6','7-9','10+'];
+      const idxAtual = ordem.indexOf(d.mets);
+      const idxMin = ordem.indexOf(funcao.metsMin);
+      if(idxAtual < idxMin){
+        vetoMets = true;
+        vetosAbs.push(`Capacidade funcional insuficiente para ${funcao.label} (${d.mets} METs — mínimo ${funcao.metsMin} METs)`);
+      } else {
+        funcaoBrigAprovada = funcao.label;
+      }
+    }
+  }
+
+  if(vetosAbs.length > 0) return {tipo:'inapto', label:'Inapto', emoji:'🚫', sub:'Critério(s) de veto absoluto identificado(s). Não apto para a(s) atividade(s) selecionada(s).', vetosAbs, vetosRel, restricoes, funcaoBrigAprovada};
+  if(vetosRel.length > 0) return {tipo:'inapto-temp', label:'Inapto Temporário', emoji:'⏸️', sub:'Critério(s) relativo(s) presente(s). Avaliação complementar necessária antes de liberar.', vetosAbs, vetosRel, restricoes, funcaoBrigAprovada};
+  if(restricoes.length > 0) return {tipo:'apto-rest', label:'Apto com Restrição', emoji:'⚠️', sub:'Apto para a atividade com restrições específicas documentadas abaixo.', vetosAbs, vetosRel, restricoes, funcaoBrigAprovada};
+  return {tipo:'apto', label:'Apto', emoji:'✅', sub:'Nenhum critério de veto ou restrição identificado. Apto para a(s) atividade(s) selecionada(s).', vetosAbs, vetosRel, restricoes, funcaoBrigAprovada};
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────
+function renderSteps(){
+  const pct=(S.step/(ETAPAS.length-1))*100;
+  document.getElementById('prog').style.width=pct+'%';
+  let h='';
+  ETAPAS.forEach((l,i)=>{
+    const cls=i<S.step?'done':i===S.step?'active':'';
+    h+=`<div class="step-pip ${cls}" title="${l}"></div>`;
+  });
+  document.getElementById('steps').innerHTML=h;
+}
+
+function set(k,v){S.d[k]=v;renderEtapa();}
+function setCrit(k,v){S.d.crit[k]=v;renderEtapa();}
+function setNR(k){S.d.nrs[k]=!S.d.nrs[k];if(!S.d.nrs.brig){S.d.mets=null;S.d.funcaoBrig=null;}renderEtapa();}
+function setMets(v){S.d.mets=v;renderEtapa();}
+function setFuncBrig(v){S.d.funcaoBrig=v;renderEtapa();}
+function salvar(k,v){S.d[k]=v;}
+function avancar(){S.step=Math.min(S.step+1,ETAPAS.length-1);render();}
+function voltar(){S.step=Math.max(S.step-1,0);render();}
+function render(){renderSteps();renderEtapa();window.scrollTo({top:0,behavior:'smooth'});}
+
+function renderEtapa(){
+  renderSteps();
+  const app=document.getElementById('app');
+  const s=S.step;
+  let h='<div class="content">';
+
+  // ── 0: Dados ─────────────────────────────────────────────────────
+  if(s===0){
+    h+=`<div class="section-eyebrow">Etapa 1 de 4</div>
+    <div class="section-title">Dados do trabalhador</div>
+    <div class="section-sub">Identificação para o parecer de aptidão</div>
+    <div class="input-card">
+      <label class="input-label">Data da avaliação</label>
+      <input id="f-data" class="input-field" type="date" value="${S.d.dataAval}" onchange="S.d.dataAval=this.value">
+    </div>
+    <div class="input-card">
+      <label class="input-label">Nome do trabalhador</label>
+      <input id="f-nome" class="input-field" type="text" placeholder="Nome completo" value="${S.d.nome}" onblur="salvar('nome',this.value)">
+    </div>
+    <div class="input-card">
+      <div class="input-row">
+        <div><label class="input-label">Matrícula</label><input id="f-mat" class="input-field" type="text" placeholder="Opcional" value="${S.d.matricula}" onblur="salvar('matricula',this.value)"></div>
+        <div><label class="input-label">Cargo</label><input id="f-cargo" class="input-field" type="text" placeholder="Ex: Operador" value="${S.d.cargo}" onblur="salvar('cargo',this.value)"></div>
+      </div>
+    </div>
+    <div class="input-card">
+      <label class="input-label">GHE / Função</label>
+      <input id="f-ghe" class="input-field" type="text" placeholder="Grupo Homogêneo de Exposição" value="${S.d.ghe}" onblur="salvar('ghe',this.value)">
+    </div>
+    <div class="input-card">
+      <div class="input-row">
+        <div><label class="input-label">Médico avaliador</label><input id="f-med" class="input-field" type="text" placeholder="Nome" value="${S.d.medico}" onblur="salvar('medico',this.value)"></div>
+        <div><label class="input-label">CRM</label><input id="f-crm" class="input-field" type="text" placeholder="CRM/UF" value="${S.d.crm}" onblur="salvar('crm',this.value)"></div>
+      </div>
+    </div>`;
+    h+=`</div><div class="nav-row"><button class="btn-next" onclick="salvarDados0();avancar()">Continuar →</button></div>`;
+  }
+
+  // ── 1: Seleção de NRs ────────────────────────────────────────────
+  else if(s===1){
+    const n=S.d.nrs;
+    h+=`<div class="section-eyebrow">Etapa 2 de 4</div>
+    <div class="section-title">Atividades a avaliar</div>
+    <div class="section-sub">Selecione uma ou mais. Os critérios clínicos serão combinados automaticamente.</div>
+    <div class="nr-grid">
+      <div class="nr-btn nr35 ${n.nr35?'sel':''}" onclick="setNR('nr35')">
+        <span class="nr-icon">🪜</span>
+        <span class="nr-label">NR-35</span>
+        <span class="nr-desc">Trabalho em altura</span>
+        ${n.nr35?'<span style="font-size:18px">✓</span>':''}
+      </div>
+      <div class="nr-btn nr33 ${n.nr33?'sel':''}" onclick="setNR('nr33')">
+        <span class="nr-icon">🕳️</span>
+        <span class="nr-label">NR-33</span>
+        <span class="nr-desc">Espaço confinado</span>
+        ${n.nr33?'<span style="font-size:18px">✓</span>':''}
+      </div>
+      <div class="nr-btn nr10 ${n.nr10?'sel':''}" onclick="setNR('nr10')">
+        <span class="nr-icon">⚡</span>
+        <span class="nr-label">NR-10</span>
+        <span class="nr-desc">Eletricidade</span>
+        ${n.nr10?'<span style="font-size:18px">✓</span>':''}
+      </div>
+      <div class="nr-btn brig ${n.brig?'sel':''}" onclick="setNR('brig')">
+        <span class="nr-icon">🧯</span>
+        <span class="nr-label">Brigada</span>
+        <span class="nr-desc">NR-23 / ABNT 14276</span>
+        ${n.brig?'<span style="font-size:18px">✓</span>':''}
+      </div>
+    </div>`;
+    const algumSel=Object.values(S.d.nrs).some(v=>v);
+    if(algumSel){
+      const nrsSel=[];
+      if(n.nr35) nrsSel.push('NR-35');
+      if(n.nr33) nrsSel.push('NR-33');
+      if(n.nr10) nrsSel.push('NR-10');
+      if(n.brig) nrsSel.push('Brigada');
+      h+=`<div class="alert alert-blue"><span class="alert-icon">ℹ️</span><span>Selecionado: <strong>${nrsSel.join(' + ')}</strong>. Os critérios clínicos serão combinados — veto em qualquer NR veta o conjunto.</span></div>`;
+    }
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${algumSel?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 2: Critérios clínicos ────────────────────────────────────────
+  else if(s===2){
+    const crit=critRelevantes();
+    const avaliados=crit.filter(c=>S.d.crit[c.id]!==undefined&&S.d.crit[c.id]!==null).length;
+
+    // Verifica veto antecipado
+    const vetoAtivo=crit.some(c=>S.d.crit[c.id]==='presente'&&c.tipo==='abs');
+
+    if(vetoAtivo){
+      const vetado=crit.find(c=>S.d.crit[c.id]==='presente'&&c.tipo==='abs');
+      h+=`<div class="veto-banner"><span style="font-size:20px">🚫</span><div class="veto-banner-text">Veto absoluto ativo: ${vetado.label}. O resultado já está determinado — você pode continuar para registrar os demais critérios ou ir direto ao parecer.</div></div>`;
+    }
+
+    h+=`<div class="section-eyebrow">Etapa 3 de 4 — Critérios clínicos</div>
+    <div class="section-title">Avaliação clínica</div>
+    <div class="section-sub">${avaliados} de ${crit.length} critérios avaliados</div>`;
+
+    // Agrupa por NR
+    const nrsSel=[];
+    if(S.d.nrs.nr35) nrsSel.push({id:'nr35',label:'NR-35 — Trabalho em altura',badgeClass:'badge-nr35'});
+    if(S.d.nrs.nr33) nrsSel.push({id:'nr33',label:'NR-33 — Espaço confinado',badgeClass:'badge-nr33'});
+    if(S.d.nrs.nr10) nrsSel.push({id:'nr10',label:'NR-10 — Eletricidade',badgeClass:'badge-nr10'});
+    if(S.d.nrs.brig) nrsSel.push({id:'brig',label:'Brigada de Incêndio',badgeClass:'badge-brig'});
+
+    // Mostra critérios únicos (sem repetir os compartilhados)
+    const mostrados=new Set();
+    nrsSel.forEach(nr=>{
+      const critNR=crit.filter(c=>c.nr.includes(nr.id)&&!mostrados.has(c.id));
+      if(critNR.length===0) return;
+      h+=`<div class="crit-block">
+        <div class="crit-header"><span class="crit-nr-badge ${nr.badgeClass}">${nr.label}</span></div>`;
+      critNR.forEach(c=>{
+        mostrados.add(c.id);
+        const v=S.d.crit[c.id];
+        const isVetoAbs=v==='presente'&&c.tipo==='abs';
+        h+=`<div class="crit-row" ${isVetoAbs?'style="background:#FFF1F0;border-radius:8px;padding:8px;"':''}>
+          <div>
+            <span class="crit-label">${c.label}</span>
+            <span class="crit-tipo tipo-${c.tipo}">${c.tipo==='abs'?'Veto absoluto':'Veto relativo'}</span>
+          </div>
+          <div class="crit-opts">
+            <button class="crit-btn ${v==='ausente'?'ausente':''}" onclick="setCrit('${c.id}','ausente')">✅ Ausente</button>
+            <button class="crit-btn ${v==='presente'?'presente':''}" onclick="setCrit('${c.id}','presente')">🚫 Presente</button>
+            ${c.opts.includes('controlado')?`<button class="crit-btn ${v==='controlado'?'controlado':''}" onclick="setCrit('${c.id}','controlado')">⚠️ Controlado</button>`:''}
+          </div>
+        </div>`;
+      });
+      h+=`</div>`;
+    });
+
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${avaliados===crit.length||vetoAtivo?'':'disabled'}>${vetoAtivo?'Ver parecer →':'Continuar →'}</button></div>`;
+  }
+
+  // ── 3: METs / Brigada ─────────────────────────────────────────────
+  else if(s===3){
+    h+=`<div class="section-eyebrow">Etapa 4 de 4 — Capacidade funcional</div>
+    <div class="section-title">Avaliação de METs</div>
+    <div class="section-sub">Estimativa de capacidade funcional. Obrigatória para Brigada — recomendada para NR-33 e NR-35.</div>
+    <div class="alert alert-blue"><span class="alert-icon">ℹ️</span><span>METs podem ser estimados por anamnese (atividades cotidianas), teste ergométrico ou escala de Borg. Use o valor conservador.</span></div>
+    <div class="mets-grid">`;
+    METS_OPTS.forEach(m=>{
+      h+=`<div class="mets-btn ${S.d.mets===m.val?'sel':''}" onclick="setMets('${m.val}')">
+        <span class="mets-val">${m.label}</span>
+        <span class="mets-label">${m.sub}</span>
+      </div>`;
+    });
+    h+=`</div>`;
+
+    if(S.d.nrs.brig && S.d.mets){
+      h+=`<div class="input-card" style="margin-top:4px">
+        <label class="input-label">Função na Brigada</label>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">`;
+      BRIG_FUNCOES.forEach(f=>{
+        const ordemMets=['<3','3-4','5-6','7-9','10+'];
+        const idxAtual=ordemMets.indexOf(S.d.mets);
+        const idxMin=ordemMets.indexOf(f.metsMin);
+        const ok=idxAtual>=idxMin;
+        const sel=S.d.funcaoBrig===f.id;
+        h+=`<div style="background:${sel?'#EEF4FF':'#F9F9F9'};border:${sel?'2px solid #0A84FF':'1px solid #E5E5EA'};border-radius:10px;padding:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="setFuncBrig('${f.id}')">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:${sel?'#0A5EC0':'#1C1C1E'}">${f.label}</div>
+            <div style="font-size:11px;color:#8E8E93">${f.sub} — mín. ${f.metsMin} METs</div>
+          </div>
+          <span style="font-size:16px">${ok?'✅':'🚫'}</span>
+        </div>`;
+      });
+      h+=`</div></div>`;
+    }
+
+    h+=`<div class="input-card" style="margin-top:4px">
+      <label class="input-label">Observações clínicas (opcional)</label>
+      <textarea id="f-obs" class="input-field" placeholder="Condições relevantes não cobertas pelos critérios acima…" onblur="salvar('obsGeral',this.value)">${S.d.obsGeral}</textarea>
+    </div>`;
+
+    const brigOk=!S.d.nrs.brig||(S.d.mets&&S.d.funcaoBrig);
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${S.d.mets&&brigOk?'':'disabled'}>Ver parecer →</button></div>`;
+  }
+
+  // ── 4: Resultado / Parecer ────────────────────────────────────────
+  else if(s===4){
+    const res=classificar();
+    const nrsSel=[];
+    if(S.d.nrs.nr35) nrsSel.push('NR-35');
+    if(S.d.nrs.nr33) nrsSel.push('NR-33');
+    if(S.d.nrs.nr10) nrsSel.push('NR-10');
+    if(S.d.nrs.brig) nrsSel.push('Brigada');
+    const metsLabel=METS_OPTS.find(m=>m.val===S.d.mets)?.label||'—';
+
+    h+=`<div class="result-hero ${res.tipo}">
+      <span class="result-emoji">${res.emoji}</span>
+      <div class="result-class">Parecer de aptidão</div>
+      <div class="result-badge">${res.label}</div>
+      <div class="result-sub">${res.sub}</div>
+    </div>`;
+
+    // Vetos absolutos
+    if(res.vetosAbs.length>0){
+      h+=`<div class="summary-card"><div class="summary-title">🚫 Critérios de veto absoluto</div>`;
+      res.vetosAbs.forEach(v=>{h+=`<div class="rest-item" style="background:#FFF1F0;border-color:#FF3B30;color:#7A0000">${v}</div>`;});
+      h+=`</div>`;
+    }
+
+    // Vetos relativos
+    if(res.vetosRel.length>0){
+      h+=`<div class="summary-card"><div class="summary-title">⚠️ Critérios para avaliação complementar</div>`;
+      res.vetosRel.forEach(v=>{h+=`<div class="rest-item">${v}</div>`;});
+      h+=`</div>`;
+    }
+
+    // Restrições
+    if(res.restricoes.length>0){
+      h+=`<div class="summary-card"><div class="summary-title">📋 Restrições e condicionantes</div>`;
+      res.restricoes.forEach(r=>{h+=`<div class="rest-item">${r}</div>`;});
+      h+=`</div>`;
+    }
+
+    // Brigada aprovada
+    if(res.funcaoBrigAprovada){
+      h+=`<div class="alert alert-green"><span class="alert-icon">🧯</span><span>Brigada: apto para <strong>${res.funcaoBrigAprovada}</strong> com capacidade funcional de ${metsLabel}.</span></div>`;
+    }
+
+    // Resumo
+    h+=`<div class="summary-card">
+      <div class="summary-title">Resumo da avaliação</div>
+      <div class="summary-row"><span class="summary-label">Trabalhador</span><span class="summary-val">${S.d.nome||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Cargo / GHE</span><span class="summary-val">${S.d.cargo||'—'}${S.d.ghe?' / '+S.d.ghe:''}</span></div>
+      <div class="summary-row"><span class="summary-label">Atividades avaliadas</span><span class="summary-val">${nrsSel.join(' · ')}</span></div>
+      <div class="summary-row"><span class="summary-label">Capacidade funcional</span><span class="summary-val">${metsLabel}</span></div>
+      <div class="summary-row"><span class="summary-label">Data da avaliação</span><span class="summary-val">${S.d.dataAval||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Médico</span><span class="summary-val">${S.d.medico||'—'}${S.d.crm?' · '+S.d.crm:''}</span></div>
+      <div class="summary-row"><span class="summary-label">Parecer</span><span class="summary-val">${res.label}</span></div>
+    </div>`;
+
+    if(res.tipo==='apto'||res.tipo==='apto-rest'){
+      h+=`<div class="input-card">
+        <label class="input-label">Prazo de reavaliação</label>
+        <select class="input-field" onchange="salvar('prazoReav',this.value)">
+          <option value="">Selecione…</option>
+          <option value="6m" ${S.d.prazoReav==='6m'?'selected':''}>6 meses</option>
+          <option value="1a" ${S.d.prazoReav==='1a'?'selected':''}>1 ano</option>
+          <option value="2a" ${S.d.prazoReav==='2a'?'selected':''}>2 anos</option>
+          <option value="mudanca" ${S.d.prazoReav==='mudanca'?'selected':''}>Na mudança de condição clínica</option>
+        </select>
+      </div>`;
+    }
+
+    h+=`<div class="alert alert-amber"><span class="alert-icon">⚠️</span><span>Este parecer <strong>não substitui o ASO</strong>. Use como base para emissão do ASO no sistema da empresa conforme NR-7.</span></div>`;
+
+    h+=`</div><div class="nav-row">
+      <button class="btn-reset" onclick="reiniciar()">🔄 Novo</button>
+      <button class="btn-export" onclick="exportar()">Exportar parecer</button>
+    </div><div style="height:20px"></div>`;
+  }
+
+  if(s<4) h+='</div>';
+  app.innerHTML=h;
+}
+
+function salvarDados0(){
+  S.d.dataAval=document.getElementById('f-data')?.value||S.d.dataAval;
+  S.d.nome=document.getElementById('f-nome')?.value||S.d.nome;
+  S.d.matricula=document.getElementById('f-mat')?.value||S.d.matricula;
+  S.d.cargo=document.getElementById('f-cargo')?.value||S.d.cargo;
+  S.d.ghe=document.getElementById('f-ghe')?.value||S.d.ghe;
+  S.d.medico=document.getElementById('f-med')?.value||S.d.medico;
+  S.d.crm=document.getElementById('f-crm')?.value||S.d.crm;
+}
+
+function reiniciar(){
+  S.step=0;
+  S.d={nome:'',cargo:'',ghe:'',matricula:'',dataAval:'',medico:'',crm:'',
+    nrs:{nr35:false,nr33:false,nr10:false,brig:false},
+    crit:{},mets:null,funcaoBrig:null,obsGeral:'',restricoes:'',prazoReav:''};
+  render();
+}
+
+function exportar(){
+  const res=classificar();
+  const d=S.d;
+  const nrsSel=[];
+  if(d.nrs.nr35) nrsSel.push('NR-35 — Trabalho em altura');
+  if(d.nrs.nr33) nrsSel.push('NR-33 — Espaço confinado');
+  if(d.nrs.nr10) nrsSel.push('NR-10 — Eletricidade');
+  if(d.nrs.brig) nrsSel.push('Brigada de Incêndio (NR-23)');
+  const metsLabel=METS_OPTS.find(m=>m.val===d.mets)?.label||'—';
+  const prazoLabel={['6m']:'6 meses',['1a']:'1 ano',['2a']:'2 anos',['mudanca']:'Na mudança de condição clínica'}[d.prazoReav]||'—';
+  const crit=critRelevantes();
+
+  const critTexto=crit.map(c=>{
+    const v=d.crit[c.id];
+    const status=v==='ausente'?'[AUSENTE]':v==='presente'?'[PRESENTE]':v==='controlado'?'[CONTROLADO]':'[NÃO AVALIADO]';
+    return `  ${status} ${c.label} (${c.tipo==='abs'?'veto absoluto':'veto relativo'})`;
+  }).join('\n');
+
+  const txt=`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARECER DE APTIDÃO PARA ATIVIDADE CRÍTICA
+Base para emissão de ASO — NR-7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Data da avaliação : ${d.dataAval||'—'}
+Trabalhador       : ${d.nome||'—'}
+Matrícula         : ${d.matricula||'—'}
+Cargo             : ${d.cargo||'—'}
+GHE / Função      : ${d.ghe||'—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ATIVIDADES AVALIADAS
+${nrsSel.map((n,i)=>`  ${i+1}. ${n}`).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARECER FINAL   : ${res.label.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CAPACIDADE FUNCIONAL
+  METs estimados  : ${metsLabel}
+  ${d.nrs.brig&&d.funcaoBrig?`Função na Brigada: ${BRIG_FUNCOES.find(f=>f.id===d.funcaoBrig)?.label||'—'}`:''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITÉRIOS CLÍNICOS AVALIADOS
+${critTexto}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${res.vetosAbs.length>0?`VETOS ABSOLUTOS\n${res.vetosAbs.map((v,i)=>`  ${i+1}. ${v}`).join('\n')}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`:''}
+${res.vetosRel.length>0?`AVALIAÇÃO COMPLEMENTAR NECESSÁRIA\n${res.vetosRel.map((v,i)=>`  ${i+1}. ${v}`).join('\n')}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`:''}
+${res.restricoes.length>0?`RESTRIÇÕES E CONDICIONANTES\n${res.restricoes.map((r,i)=>`  ${i+1}. ${r}`).join('\n')}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`:''}
+${d.obsGeral?`OBSERVAÇÕES CLÍNICAS\n  ${d.obsGeral}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`:''}
+PRAZO DE REAVALIAÇÃO : ${prazoLabel}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Médico            : ${d.medico||'_________________________'}
+CRM               : ${d.crm||'____________'}
+Assinatura        : _________________________
+
+⚠️  Este documento NÃO substitui o ASO.
+    Emitir ASO conforme NR-7 no sistema da empresa.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  document.getElementById('modal-body').textContent=txt;
+  document.getElementById('modal').classList.add('show');
+}
+
+function fecharModal(){document.getElementById('modal').classList.remove('show');}
+function copiar(){
+  const txt=document.getElementById('modal-body').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('.modal-btn.primary');
+    btn.textContent='✅ Copiado!';
+    setTimeout(()=>{btn.textContent='📋 Copiar para área de transferência';},2000);
+  });}
+}
+
+render();
+</script>
+</body>
+</html>
