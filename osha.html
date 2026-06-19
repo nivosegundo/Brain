@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Acidente">
+<title>Classificador de Acidentes — OSHA + CAT</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F2F7;color:#1C1C1E;min-height:100vh;padding-bottom:48px}
+.header{background:#1C1C1E;padding:16px 20px 14px;position:sticky;top:0;z-index:10}
+.header-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8E8E93;text-transform:uppercase;margin-bottom:4px}
+.header-title{font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px}
+.header-sub{font-size:12px;color:#636366;margin-top:3px}
+.progress-track{height:2px;background:#3A3A3C;margin-top:12px;border-radius:1px;overflow:hidden}
+.progress-fill{height:100%;background:#FF9F0A;border-radius:1px;transition:width 0.35s}
+.step-row{display:flex;align-items:center;gap:4px;margin-top:10px;flex-wrap:wrap}
+.step-pip{width:6px;height:6px;border-radius:50%;background:#3A3A3C;flex-shrink:0;transition:all 0.2s}
+.step-pip.active{background:#FF9F0A;width:18px;border-radius:3px}
+.step-pip.done{background:#30D158}
+.step-pip.br{background:#005B9A}
+.step-pip.br.active{background:#0A84FF}
+.content{padding:20px 16px 0}
+.section-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.1em;color:#8E8E93;text-transform:uppercase;margin-bottom:8px}
+.section-title{font-size:22px;font-weight:700;color:#1C1C1E;letter-spacing:-0.4px;margin-bottom:4px;line-height:1.2}
+.section-sub{font-size:14px;color:#8E8E93;margin-bottom:20px;line-height:1.5}
+.input-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px}
+.input-label{font-size:12px;font-weight:600;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:block}
+.input-field{width:100%;padding:11px 14px;border:1px solid #E5E5EA;border-radius:10px;font-size:15px;color:#1C1C1E;background:#F9F9F9;outline:none;transition:border-color 0.15s;-webkit-appearance:none}
+.input-field:focus{border-color:#FF9F0A;background:#fff}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+textarea.input-field{resize:none;min-height:80px;line-height:1.5}
+select.input-field{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-color:#F9F9F9;padding-right:36px}
+.yesno-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.yn-btn{background:#fff;border:1px solid #E5E5EA;border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:5px}
+.yn-btn:active{transform:scale(0.97)}
+.yn-btn.sim.selected{border:2px solid #FF3B30;background:#FFF1F0}
+.yn-btn.nao.selected{border:2px solid #30D158;background:#F0FFF4}
+.yn-btn.sim.selected .yn-label,.yn-btn.sim.selected .yn-sublabel{color:#CC1800}
+.yn-btn.nao.selected .yn-label,.yn-btn.nao.selected .yn-sublabel{color:#1A8C35}
+.yn-icon{font-size:24px}
+.yn-label{font-size:13px;font-weight:600;color:#1C1C1E;line-height:1.2}
+.yn-sublabel{font-size:11px;color:#8E8E93;line-height:1.3}
+.opt-btn{width:100%;background:#fff;border:1px solid #E5E5EA;border-radius:14px;padding:14px;margin-bottom:8px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.15s;position:relative}
+.opt-btn:active{transform:scale(0.98)}
+.opt-btn.selected{border:2px solid #FF9F0A;background:#FFF8EE}
+.opt-icon-wrap{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:#F2F2F7}
+.opt-btn.selected .opt-icon-wrap{background:#FFECD0}
+.opt-label{font-size:14px;font-weight:600;color:#1C1C1E;display:block;margin-bottom:2px}
+.opt-desc{font-size:12px;color:#8E8E93;display:block;line-height:1.3}
+.opt-btn.selected .opt-label{color:#CC7A00}
+.opt-check{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0}
+.opt-btn.selected .opt-check{opacity:1}
+.alert{border-radius:12px;padding:11px 13px;font-size:13px;margin:8px 0;display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+.alert-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.alert-red{background:#FFF1F0;border-left:3px solid #FF3B30;color:#8B1A1A}
+.alert-amber{background:#FFF8EE;border-left:3px solid #FF9F0A;color:#7A4A00}
+.alert-green{background:#F0FFF4;border-left:3px solid #30D158;color:#1A5C2E}
+.alert-gray{background:#F2F2F7;border-left:3px solid #8E8E93;color:#3A3A3C}
+.alert-blue{background:#EEF4FF;border-left:3px solid #0A84FF;color:#003A8C}
+.alert-br{background:#E8F0FE;border-left:3px solid #005B9A;color:#003A6B}
+.nav-row{display:flex;gap:10px;padding:16px 16px 0}
+.btn-back{background:#F2F2F7;color:#1C1C1E;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer;min-width:76px}
+.btn-back:active{background:#E5E5EA}
+.btn-next{flex:1;background:#FF9F0A;color:#fff;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-next:active{background:#CC7A00}
+.btn-next:disabled{background:#C7C7CC;cursor:default}
+.btn-next.br{background:#005B9A}
+.btn-next.br:active{background:#003A6B}
+.btn-export{flex:1;background:#1C1C1E;color:#fff;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-export:active{background:#3A3A3C}
+.btn-reset{background:#F2F2F7;color:#8E8E93;border:none;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer}
+.fa-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.fa-item{background:#fff;border:1px solid #E5E5EA;border-radius:12px;padding:11px;cursor:pointer;transition:all 0.15s;display:flex;align-items:flex-start;gap:9px}
+.fa-item:active{transform:scale(0.97)}
+.fa-item.sim{border:2px solid #30D158;background:#F0FFF4}
+.fa-item.nao{border:2px solid #FF3B30;background:#FFF1F0}
+.fa-check{width:20px;height:20px;border-radius:50%;border:1.5px solid #E5E5EA;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px;background:#F2F2F7}
+.fa-item.sim .fa-check{background:#30D158;border-color:#30D158;color:#fff}
+.fa-item.nao .fa-check{background:#FF3B30;border-color:#FF3B30;color:#fff}
+.fa-text{font-size:12px;color:#1C1C1E;line-height:1.3}
+.fa-item.sim .fa-text{color:#0D4D1F}
+.fa-item.nao .fa-text{color:#7A0000}
+.fa-legend{display:flex;gap:12px;margin-bottom:10px;font-size:12px;color:#8E8E93}
+.result-hero{border-radius:16px;padding:20px;margin-bottom:12px;text-align:center}
+.result-hero.clinico{background:linear-gradient(135deg,#F0FFF4,#C8F0D5);border:1px solid #30D158}
+.result-hero.primeiros-socorros{background:linear-gradient(135deg,#EEF4FF,#C0D8FF);border:1px solid #0A84FF}
+.result-hero.saf{background:linear-gradient(135deg,#FFF8EE,#FFE8C0);border:1px solid #FF9F0A}
+.result-hero.caf{background:linear-gradient(135deg,#FFF1F0,#FFD0CC);border:1px solid #FF3B30}
+.result-hero.obito{background:#1C1C1E;border:1px solid #3A3A3C}
+.result-emoji{font-size:40px;margin-bottom:8px;display:block}
+.result-class{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:5px}
+.result-badge{display:inline-block;border-radius:8px;padding:5px 16px;font-size:26px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px}
+.result-sub{font-size:13px;line-height:1.5}
+.result-hero.clinico .result-class{color:#1A8C35}.result-hero.clinico .result-badge{background:#C8F0D5;color:#0D4D1F}.result-hero.clinico .result-sub{color:#0D4D1F}
+.result-hero.primeiros-socorros .result-class{color:#0A5EC0}.result-hero.primeiros-socorros .result-badge{background:#C0D8FF;color:#003A8C}.result-hero.primeiros-socorros .result-sub{color:#003A8C}
+.result-hero.saf .result-class{color:#CC7A00}.result-hero.saf .result-badge{background:#FFE8C0;color:#7A4A00}.result-hero.saf .result-sub{color:#7A4A00}
+.result-hero.caf .result-class{color:#CC1800}.result-hero.caf .result-badge{background:#FFD0CC;color:#7A0000}.result-hero.caf .result-sub{color:#7A0000}
+.result-hero.obito .result-class{color:#FF9F0A}.result-hero.obito .result-badge{background:#3A3A3C;color:#fff}.result-hero.obito .result-sub{color:#EBEBF5}
+.br-hero{border-radius:16px;padding:20px;margin-bottom:12px;background:linear-gradient(135deg,#E8F0FE,#C0D4F8);border:1px solid #005B9A}
+.br-badge{display:inline-block;border-radius:8px;padding:4px 14px;font-size:13px;font-weight:700;margin-right:6px;margin-bottom:6px}
+.br-badge.obrig{background:#FF3B30;color:#fff}
+.br-badge.facult{background:#FF9F0A;color:#fff}
+.br-badge.nao{background:#30D158;color:#fff}
+.br-badge.prazo{background:#005B9A;color:#fff}
+.summary-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px}
+.summary-title{font-size:12px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.summary-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:0.5px solid #F2F2F7;font-size:13px;gap:10px}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:#8E8E93;flex-shrink:0}
+.summary-val{font-weight:600;color:#1C1C1E;text-align:right}
+.action-pill{display:inline-block;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;margin-right:4px;margin-top:4px}
+.pill-red{background:#FF3B30;color:#fff}.pill-amber{background:#FF9F0A;color:#fff}.pill-gray{background:#8E8E93;color:#fff}.pill-blue{background:#0A84FF;color:#fff}.pill-br{background:#005B9A;color:#fff}
+.justif-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px}
+.justif-title{font-size:12px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.justif-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:0.5px solid #F2F2F7;font-size:13px}
+.justif-row:last-child{border-bottom:none}
+.justif-text{color:#3A3A3C;line-height:1.4}
+.cat-field{background:#F2F2F7;border-radius:10px;padding:12px;margin-bottom:8px}
+.cat-field-label{font-size:11px;font-weight:700;color:#005B9A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block}
+.cat-field-val{font-size:13px;color:#1C1C1E;line-height:1.4}
+.cat-field-hint{font-size:11px;color:#8E8E93;margin-top:3px;line-height:1.3}
+.divider{height:1px;background:#E5E5EA;margin:14px 0}
+.section-flag{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.flag-pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.04em}
+.flag-osha{background:#1C1C1E;color:#FF9F0A}
+.flag-br{background:#005B9A;color:#fff}
+.link-btn{display:block;width:100%;background:#005B9A;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;margin-bottom:8px}
+.link-btn:active{background:#003A6B}
+.link-btn.secondary{background:#F2F2F7;color:#005B9A}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#1C1C1E;border-radius:20px 20px 0 0;padding:22px 18px 40px;width:100%;max-height:82vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:#3A3A3C;border-radius:2px;margin:0 auto 18px}
+.modal-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.modal-sub{font-size:12px;color:#636366;margin-bottom:14px}
+.modal-body{font-size:11px;color:#EBEBF5;line-height:1.7;white-space:pre-wrap;font-family:'Courier New',monospace;background:#2C2C2E;border-radius:10px;padding:13px;margin-bottom:10px}
+.modal-btn{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.modal-btn.primary{background:#FF9F0A;color:#fff}
+.modal-btn.secondary{background:#2C2C2E;color:#fff}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-eyebrow">OSHA 29 CFR 1904 · CAT · eSocial S-2210</div>
+  <div class="header-title">Classificador de Acidentes</div>
+  <div class="header-sub">Clínico · PS · SAF · CAF + CAT + eSocial</div>
+  <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+  <div class="step-row" id="steps"></div>
+</div>
+<div id="app"></div>
+<div class="modal-overlay" id="modal" onclick="fecharModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Relatório Completo</div>
+    <div class="modal-sub">OSHA 300 + CAT + eSocial S-2210</div>
+    <div class="modal-body" id="modal-body"></div>
+    <button class="modal-btn primary" onclick="copiarRelatorio()">📋 Copiar para área de transferência</button>
+    <button class="modal-btn secondary" onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
+<script>
+const S = {
+  step: 0,
+  d: {
+    // Dados básicos
+    data:'', funcionario:'', setor:'', cargo:'', matricula:'',
+    // OSHA
+    workRelated:null, soAlimentacao:null, novoCaso:null, tipoLesao:null,
+    obito:null, hospitalizacao:null, amputacao:null,
+    perdaOlho:null, perdaConsciencia:null,
+    diasAfastado:'0', diasRestrito:'0',
+    parteCorpo:'', causa:'', descricao:'', outroTratamento:'',
+    fa:{curativo:null,compress:null,calor_superf:null,oclusao:null,lavagem:null,
+        atadura:null,imobiliz:null,massagem:null,otc:null,fluor:null,ocular:null,
+        curativo_esp:null,oxigenio:null,evacuation:null,rxdiag:null,
+        aval_externo:null,aval_inhouse:null},
+    // Camada brasileira
+    tipoAcidenteBR:null,   // tipico | trajeto | doenca | suspeita
+    clt:null,              // sim | nao
+    doencaPreexistente:null,
+    cid:'', agenteCausador:'',
+  }
+};
+
+const ETAPAS = ['Evento','Work-rel.','Novo caso','Lesão','Trat.','Desfechos','Descrição','BR — Tipo','BR — CAT','Resultado'];
+const TOTAL_STEPS = ETAPAS.length;
+
+const PARTES_CORPO = ['Cabeça/Crânio','Rosto','Olho(s)','Pescoço','Ombro','Braço superior','Cotovelo','Antebraço','Pulso','Mão/Dedos','Tórax/Costelas','Dorso superior','Lombar','Quadril','Coxa','Joelho','Perna','Tornozelo','Pé/Dedos do pé','Múltiplas partes','Outro'];
+
+const TIPOS_LESAO = [
+  {id:'lesao',label:'Lesão (traumática)',icon:'🦴'},
+  {id:'pele',label:'Doença de pele',icon:'🩹'},
+  {id:'resp',label:'Doença respiratória',icon:'🫁'},
+  {id:'intox',label:'Intoxicação / exposição química',icon:'☠️'},
+  {id:'auditiva',label:'Perda auditiva',icon:'👂'},
+  {id:'outras',label:'Outras doenças',icon:'🏥'},
+];
+
+const CAUSAS = ['Queda — mesmo nível','Queda — nível diferente','Atingido por objeto','Preso em/entre equipamentos','Sobresforço','Exposição química','Calor/temperatura','Movimento repetitivo','Acidente com veículo','Elétrico','Outro'];
+
+const AGENTES = ['Animais (picada/mordida)','Agente biológico','Agente químico','Calor excessivo','Eletricidade','Esforço excessivo','Ferramentas manuais','Máquinas e equipamentos','Material cortante/perfurante','Poeira/fumos','Queda de objeto','Radiação','Ruído','Superfície irregular','Veículo','Outro'];
+
+const FA_ITEMS = [
+  {id:'curativo',label:'Curativo não cirúrgico',cat:'fa'},
+  {id:'compress',label:'Compressa fria / gelo',cat:'fa'},
+  {id:'calor_superf',label:'Calor superficial',cat:'fa'},
+  {id:'oclusao',label:'Oclusão ocular não cirúrgica',cat:'fa'},
+  {id:'lavagem',label:'Limpeza / irrigação de ferida',cat:'fa'},
+  {id:'atadura',label:'Atadura sem imobilização',cat:'fa'},
+  {id:'imobiliz',label:'Imobilização temporária de transporte',cat:'fa'},
+  {id:'massagem',label:'Massagem (não fisioterapia)',cat:'fa'},
+  {id:'otc',label:'Medicamento OTC dose única',cat:'fa'},
+  {id:'fluor',label:'Antisséptico tópico / fluor',cat:'fa'},
+  {id:'ocular',label:'Remoção corpo estranho ocular',cat:'fa'},
+  {id:'curativo_esp',label:'Steri-strip / butterfly',cat:'fa'},
+  {id:'oxigenio',label:'Oxigenioterapia < 15 min',cat:'fa'},
+  {id:'evacuation',label:'Remoção farpa superficial',cat:'fa'},
+  {id:'rxdiag',label:'Raio-X sem tratamento decorrente',cat:'fa'},
+  {id:'aval_externo',label:'Avaliação médica externa sem tratamento → First Aid (OSHA)',cat:'fa'},
+  {id:'aval_inhouse',label:'Avaliação médica in-house sem tratamento → Clínico (conservador)',cat:'clinico'},
+];
+
+// ── CLASSIFICAÇÃO OSHA ────────────────────────────────────────────────
+function temFASim(){return FA_ITEMS.some(i=>i.cat==='fa'&&S.d.fa[i.id]===true);}
+function soInhouse(){return S.d.fa['aval_inhouse']===true&&!FA_ITEMS.some(i=>i.cat==='fa'&&S.d.fa[i.id]===true);}
+function todosFANao(){const v=Object.values(S.d.fa);return v.every(x=>x===false)&&v.some(x=>x===false);}
+
+function classificarOSHA(){
+  const d=S.d;
+  const diasAf=parseInt(d.diasAfastado)||0;
+  const diasRest=parseInt(d.diasRestrito)||0;
+  if(d.obito==='sim') return {tipo:'obito',label:'Óbito',emoji:'⬛',sub:'Comunicar à OSHA em até 8 horas.',justificativa:['Óbito confirmado'],acoes:['Notificar OSHA em até 8h','OSHA 300 Log','Form 301','Preservar local']};
+  if(d.workRelated==='nao'||d.soAlimentacao==='sim'){
+    const motivo=d.soAlimentacao==='sim'?'Exceção 1904.5(b)(2)(iv) — evento exclusivamente relacionado a alimentação':'Não work-related';
+    return {tipo:'clinico',label:'Clínico',emoji:'🩺',sub:d.soAlimentacao==='sim'?'Exceção alimentação (1904.5(b)(2)(iv)). Não registrável OSHA 300.':'Não work-related. Sem registro OSHA 300.',justificativa:[motivo],acoes:['Registro interno facultativo']};
+  }
+  if(d.novoCaso==='nao') return {tipo:'clinico',label:'Clínico',emoji:'🔄',sub:'Continuação de caso anterior.',justificativa:['Não é novo caso'],acoes:['Revisar registro anterior']};
+  const reportavel=d.hospitalizacao==='sim'||d.amputacao==='sim'||d.perdaOlho==='sim';
+  const temAf=diasAf>0, temRest=diasRest>0;
+  if(soInhouse()&&!reportavel&&!temAf&&!temRest&&d.perdaConsciencia!=='sim') return {tipo:'clinico',label:'Clínico',emoji:'🩺',sub:'Avaliação in-house sem procedimento. Padrão conservador.',justificativa:['Work-related','Avaliação médica in-house — nenhum procedimento','Padrão conservador da empresa'],acoes:['Registro interno']};
+  const soFA=temFASim()&&!reportavel&&!temAf&&!temRest&&d.perdaConsciencia!=='sim';
+  if(soFA) return {tipo:'primeiros-socorros',label:'Primeiros Socorros',emoji:'🩹',sub:'Tratamento limitado a primeiros socorros (29 CFR 1904.7(a)). Work-related, não registrável OSHA 300.',justificativa:['Work-related','Novo caso','Somente procedimentos da lista OSHA first aid','Sem afastamento ou outros critérios'],acoes:['Registro interno','Não entra no OSHA 300 Log']};
+  if(todosFANao()&&!reportavel&&!temAf&&!temRest&&d.perdaConsciencia!=='sim') return {tipo:'clinico',label:'Clínico',emoji:'🩺',sub:'Sem tratamento formal. Apenas avaliação.',justificativa:['Work-related','Novo caso','Nenhum procedimento aplicado'],acoes:['Registro interno facultativo']};
+  const acoes=['OSHA 300 Log','Form 301'];
+  const justif=['Work-related','Novo caso'];
+  if(d.perdaConsciencia==='sim') justif.push('Perda de consciência');
+  if(temAf) justif.push(`${diasAf} dia(s) afastado`);
+  if(temRest) justif.push(`${diasRest} dia(s) em restrição`);
+  if(reportavel){
+    if(d.hospitalizacao==='sim'){justif.push('Hospitalização → notificar OSHA 24h');acoes.push('Notificar hospitalização 24h');}
+    if(d.amputacao==='sim'){justif.push('Amputação → notificar OSHA 24h');acoes.push('Notificar amputação 24h');}
+    if(d.perdaOlho==='sim'){justif.push('Perda de olho → notificar OSHA 24h');acoes.push('Notificar perda de olho 24h');}
+  }
+  if(!temFASim()) justif.push('Tratamento médico além de primeiros socorros');
+  if(temAf) return {tipo:'caf',label:'CAF',emoji:'🚨',sub:'Caso registrável com afastamento.',justificativa:justif,acoes};
+  return {tipo:'saf',label:'SAF',emoji:'⚠️',sub:'Caso registrável sem afastamento.',justificativa:justif,acoes};
+}
+
+// ── CLASSIFICAÇÃO BRASILEIRA ──────────────────────────────────────────
+function classificarBR(oshaRes){
+  const d=S.d;
+  const diasAf=parseInt(d.diasAfastado)||0;
+  const workRel=oshaRes.tipo!=='clinico';
+  const tipoAc=d.tipoAcidenteBR;
+
+  // Não work-related pela OSHA
+  if(!workRel) return {
+    catObrig:false, catFacult:true, eSocialObrig:false,
+    prazoCAT:'—', prazoESocial:'—',
+    motivo:'Evento não work-related (OSHA). CAT não obrigatória.',
+    motivoFacult:'Médico pode abrir CAT facultativa se identificar nexo ocupacional (Lei 8.213/91 art. 22 §2º).',
+    acoes:['CAT facultativa a critério médico'],
+    campos:[]
+  };
+
+  // Óbito
+  if(d.obito==='sim') return {
+    catObrig:true, catFacult:false, eSocialObrig:true,
+    prazoCAT:'Imediato — antes do sepultamento',
+    prazoESocial:'Dia seguinte ao óbito',
+    motivo:'Óbito por acidente de trabalho. CAT e S-2210 obrigatórios.',
+    acoes:['CAT imediata — antes do sepultamento','S-2210 no dia seguinte','Comunicar à Previdência Social','Preservar local do acidente'],
+    campos:camposCAT(d, diasAf, tipoAc, true)
+  };
+
+  // Doença ocupacional
+  if(tipoAc==='doenca') return {
+    catObrig:true, catFacult:false, eSocialObrig:true,
+    prazoCAT:'1º dia útil após o diagnóstico',
+    prazoESocial:'Dia seguinte ao diagnóstico',
+    motivo:'Doença ocupacional diagnosticada. CAT e S-2210 obrigatórios (Lei 8.213/91 art. 20).',
+    acoes:['CAT até 1º dia útil após diagnóstico','S-2210 no dia seguinte ao diagnóstico','Emitir atestado com CID e nexo ocupacional'],
+    campos:camposCAT(d, diasAf, tipoAc, false)
+  };
+
+  // Suspeita de doença ocupacional
+  if(tipoAc==='suspeita') return {
+    catObrig:false, catFacult:true, eSocialObrig:false,
+    prazoCAT:'A qualquer momento (facultativa)',
+    prazoESocial:'Somente após confirmação diagnóstica',
+    motivo:'Suspeita de doença ocupacional. CAT facultativa — recomendada para proteger o trabalhador.',
+    motivoFacult:'Abertura da CAT facultativa protege o trabalhador e estabelece nexo desde a suspeita.',
+    acoes:['Considerar CAT facultativa','Iniciar investigação de nexo ocupacional','Registrar em prontuário'],
+    campos:[]
+  };
+
+  // Acidente típico ou trajeto
+  return {
+    catObrig:true, catFacult:false, eSocialObrig:true,
+    prazoCAT:'1º dia útil após o acidente',
+    prazoESocial:'Dia seguinte ao acidente',
+    motivo:`Acidente ${tipoAc==='trajeto'?'de trajeto':'típico de trabalho'}. CAT e S-2210 obrigatórios (Lei 8.213/91 art. 22).`,
+    acoes:[
+      'CAT até 1º dia útil após o acidente',
+      'S-2210 no dia seguinte ao acidente',
+      diasAf>15?'Afastamento > 15 dias → INSS assume → orientar B91':'Afastamento ≤ 15 dias → empresa mantém pagamento',
+    ],
+    campos:camposCAT(d, diasAf, tipoAc, false)
+  };
+}
+
+function camposCAT(d, diasAf, tipoAc, obito){
+  const tipoLabel={tipico:'Acidente típico',trajeto:'Acidente de trajeto',doenca:'Doença ocupacional',suspeita:'Suspeita doença ocupacional'}[tipoAc]||'—';
+  return [
+    {label:'Empresa (Empregador)',hint:'CNPJ, razão social, endereço completo',val:'Preencher com dados da empresa'},
+    {label:'Trabalhador',hint:'Nome completo, CPF, NIT/PIS, data de nascimento, cargo, CBO',val:d.funcionario||'Preencher'},
+    {label:'Data do acidente / diagnóstico',hint:'Data exata — campo obrigatório',val:d.data||'Preencher'},
+    {label:'Local do acidente',hint:'Descrição do local onde ocorreu o evento',val:d.setor?`Setor: ${d.setor}`:'Preencher'},
+    {label:'Tipo do acidente',hint:'Campo obrigatório na CAT',val:tipoLabel},
+    {label:'Parte do corpo atingida',hint:'Usar terminologia da CAT — localização anatômica',val:d.parteCorpo||'Preencher'},
+    {label:'Agente causador',hint:'O que diretamente causou a lesão',val:d.agenteCausador||'Selecionar no app'},
+    {label:'CID-10',hint:'Diagnóstico do médico assistente',val:d.cid||'Preencher com CID do médico'},
+    {label:'Descrição da situação geradora',hint:'O que o trabalhador fazia quando ocorreu o acidente',val:d.descricao||'Preencher'},
+    {label:'Houve afastamento?',hint:diasAf>0?`Sim — ${diasAf} dia(s)`:'Não'},
+    obito?{label:'Óbito',hint:'Marcar "Sim" na CAT',val:'SIM'}:null,
+  ].filter(Boolean);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────
+function renderSteps(){
+  const pct=(S.step/(TOTAL_STEPS-1))*100;
+  document.getElementById('prog').style.width=pct+'%';
+  let h='';
+  ETAPAS.forEach((l,i)=>{
+    const isBR=i>=7&&i<=8;
+    const cls=i<S.step?'done':i===S.step?'active':'';
+    const brCls=isBR?'br':'';
+    h+=`<div class="step-pip ${cls} ${brCls}" title="${l}"></div>`;
+  });
+  document.getElementById('steps').innerHTML=h;
+}
+
+function setSN(k,v){S.d[k]=v;renderEtapa();}
+function setFA(k,v){S.d.fa[k]=v;renderEtapa();}
+function setLesao(v){S.d.tipoLesao=v;renderEtapa();}
+function setSelect(k,v){S.d[k]=v;renderEtapa();}
+function salvarTexto(k,v){S.d[k]=v;}
+function avancar(){S.step=Math.min(S.step+1,TOTAL_STEPS-1);render();}
+function voltar(){S.step=Math.max(S.step-1,0);render();}
+function irParaResultado(){S.step=TOTAL_STEPS-1;render();}
+function irParaBR(){S.step=7;render();}
+
+function toggleFA(k){
+  const cur=S.d.fa[k];
+  S.d.fa[k]=cur===null?true:cur===true?false:null;
+  renderEtapa();
+}
+function toggleFAExclusivo(k){
+  const cur=S.d.fa[k];
+  if(k==='aval_externo') S.d.fa['aval_inhouse']=null;
+  if(k==='aval_inhouse') S.d.fa['aval_externo']=null;
+  S.d.fa[k]=cur===true?null:true;
+  renderEtapa();
+}
+
+function render(){renderSteps();renderEtapa();window.scrollTo({top:0,behavior:'smooth'});}
+
+function renderEtapa(){
+  renderSteps();
+  const app=document.getElementById('app');
+  const s=S.step;
+  let h='<div class="content">';
+
+  // ── 0: Dados ─────────────────────────────────────────────────────
+  if(s===0){
+    h+=`<div class="section-eyebrow">Etapa 1 de 9</div>
+    <div class="section-title">Dados do evento</div>
+    <div class="section-sub">Informações básicas para o registro</div>
+    <div class="input-card">
+      <label class="input-label">Data da lesão / diagnóstico</label>
+      <input id="f-data" class="input-field" type="date" value="${S.d.data}" onchange="S.d.data=this.value">
+    </div>
+    <div class="input-card">
+      <label class="input-label">Nome do funcionário</label>
+      <input id="f-func" class="input-field" type="text" placeholder="Nome ou 'Caso de privacidade'" value="${S.d.funcionario}" onblur="salvarTexto('funcionario',this.value)">
+    </div>
+    <div class="input-card">
+      <div class="input-row">
+        <div><label class="input-label">Matrícula</label><input id="f-mat" class="input-field" type="text" placeholder="Opcional" value="${S.d.matricula}" onblur="salvarTexto('matricula',this.value)"></div>
+        <div><label class="input-label">Cargo</label><input id="f-cargo" class="input-field" type="text" placeholder="Ex: Operador" value="${S.d.cargo}" onblur="salvarTexto('cargo',this.value)"></div>
+      </div>
+    </div>
+    <div class="input-card">
+      <label class="input-label">Setor / Área</label>
+      <input id="f-setor" class="input-field" type="text" placeholder="Ex: Operações" value="${S.d.setor}" onblur="salvarTexto('setor',this.value)">
+    </div>`;
+    h+=`</div><div class="nav-row"><button class="btn-next" onclick="salvarEtapa0();avancar()">Continuar →</button></div>`;
+  }
+
+  // ── 1: Work-related ───────────────────────────────────────────────
+  else if(s===1){
+    h+=`<div class="section-eyebrow">Etapa 2 de 9 — Work-relatedness (OSHA)</div>
+    <div class="section-title">O evento ocorreu no trabalho?</div>
+    <div class="section-sub">Work-related = ocorreu no ambiente de trabalho, contribuiu para a lesão ou agravou condição preexistente. Intervalo de almoço na planta é presumidamente work-related.</div>
+    <div class="yesno-row">
+      <button class="yn-btn sim ${S.d.workRelated==='sim'?'selected':''}" onclick="setSN('workRelated','sim');setSN('soAlimentacao',null)"><span class="yn-icon">⚠️</span><span class="yn-label">Sim</span></button>
+      <button class="yn-btn nao ${S.d.workRelated==='nao'?'selected':''}" onclick="setSN('workRelated','nao');setSN('soAlimentacao',null)"><span class="yn-icon">✅</span><span class="yn-label">Não</span></button>
+    </div>`;
+    if(S.d.workRelated==='sim'){
+      h+=`<div class="input-card" style="border:1px solid #FF9F0A">
+        <label class="input-label" style="color:#CC7A00">⚠️ Exceção — alimentação (1904.5(b)(2)(iv))</label>
+        <div style="font-size:12px;color:#3A3A3C;margin-bottom:10px;line-height:1.5">O evento foi <strong>exclusivamente</strong> resultado de comer, beber ou preparar alimentos?<br><span style="font-size:11px;color:#8E8E93">✅ Não work-related: pedra que quebra dente, queimadura com chá, engasgo<br>⚠️ Work-related: queda indo ao refeitório, corte em embalagem industrial</span></div>
+        <div class="yesno-row" style="margin-bottom:0">
+          <button class="yn-btn nao ${S.d.soAlimentacao==='sim'?'selected':''}" onclick="setSN('soAlimentacao','sim')"><span class="yn-icon">🍽️</span><span class="yn-label">Sim</span><span class="yn-sublabel">Só alimentação</span></button>
+          <button class="yn-btn sim ${S.d.soAlimentacao==='nao'?'selected':''}" onclick="setSN('soAlimentacao','nao')"><span class="yn-icon">⚠️</span><span class="yn-label">Não</span><span class="yn-sublabel">Outro evento</span></button>
+        </div>
+      </div>`;
+      if(S.d.soAlimentacao==='sim') h+=`<div class="alert alert-green"><span class="alert-icon">✅</span><span>Exceção 1904.5(b)(2)(iv) — não work-related → Clínico.</span></div>`;
+    }
+    const sub=S.d.workRelated===null?false:S.d.workRelated==='nao'?true:S.d.soAlimentacao!==null;
+    const irDir=S.d.workRelated==='nao'||S.d.soAlimentacao==='sim';
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="${irDir?'irParaBR()':'avancar()'}" ${sub?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 2: Novo caso ──────────────────────────────────────────────────
+  else if(s===2){
+    h+=`<div class="section-eyebrow">Etapa 3 de 9</div>
+    <div class="section-title">É um novo caso?</div>
+    <div class="section-sub">Novo: sem registro anterior do mesmo tipo na mesma parte do corpo — OU recuperação completa antes deste evento.</div>
+    <div class="yesno-row">
+      <button class="yn-btn sim ${S.d.novoCaso==='sim'?'selected':''}" onclick="setSN('novoCaso','sim')"><span class="yn-icon">🆕</span><span class="yn-label">Sim — novo</span></button>
+      <button class="yn-btn nao ${S.d.novoCaso==='nao'?'selected':''}" onclick="setSN('novoCaso','nao')"><span class="yn-icon">🔄</span><span class="yn-label">Não — continuação</span></button>
+    </div>`;
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="${S.d.novoCaso==='nao'?'irParaBR()':'avancar()'}" ${S.d.novoCaso?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 3: Tipo lesão ─────────────────────────────────────────────────
+  else if(s===3){
+    h+=`<div class="section-eyebrow">Etapa 4 de 9</div><div class="section-title">Tipo de lesão ou doença</div><div class="section-sub">Coluna do OSHA 300 Log.</div>`;
+    TIPOS_LESAO.forEach(t=>{
+      const sel=S.d.tipoLesao===t.id?'selected':'';
+      h+=`<button class="opt-btn ${sel}" onclick="setLesao('${t.id}')"><div class="opt-icon-wrap">${t.icon}</div><div><span class="opt-label">${t.label}</span></div><span class="opt-check">✓</span></button>`;
+    });
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${S.d.tipoLesao?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 4: Primeiros socorros ─────────────────────────────────────────
+  else if(s===4){
+    const faComuns=FA_ITEMS.filter(i=>i.id!=='aval_externo'&&i.id!=='aval_inhouse');
+    const faAval=FA_ITEMS.filter(i=>i.id==='aval_externo'||i.id==='aval_inhouse');
+    const marcados=Object.values(S.d.fa).filter(v=>v!==null).length;
+    h+=`<div class="section-eyebrow">Etapa 5 de 9 — Primeiros socorros (29 CFR 1904.7(a))</div>
+    <div class="section-title">Qual tratamento foi aplicado?</div>
+    <div class="section-sub">Marque tudo que foi feito. Qualquer procedimento fora desta lista = SAF ou CAF.</div>
+    <div class="alert alert-amber"><span class="alert-icon">⚠️</span><span><strong>Não são primeiros socorros:</strong> suturas, fisioterapia, prescrição, injeções, nebulização, cirurgia, encaminhamento especialista.</span></div>
+    <div class="fa-legend"><span>✅ Aplicado</span><span>❌ Não aplicado</span></div>
+    <div class="fa-grid">`;
+    faComuns.forEach(item=>{
+      const v=S.d.fa[item.id];
+      const cls=v===true?'sim':v===false?'nao':'';
+      const check=v===true?'✓':v===false?'✗':'';
+      h+=`<div class="fa-item ${cls}" onclick="toggleFA('${item.id}')"><div class="fa-check">${check}</div><span class="fa-text">${item.label}</span></div>`;
+    });
+    h+=`</div><div class="input-card" style="border:1px solid #FF9F0A;margin-top:2px">
+      <label class="input-label" style="color:#CC7A00">⚠️ Avaliação médica (zona cinzenta)</label>
+      <div style="font-size:11px;color:#8E8E93;margin-bottom:8px">Somente se nenhum procedimento acima foi feito.</div>`;
+    faAval.forEach(item=>{
+      const v=S.d.fa[item.id];
+      const cls=v===true?'sim':'';
+      const check=v===true?'✓':'';
+      h+=`<div class="fa-item ${cls}" onclick="toggleFAExclusivo('${item.id}')" style="margin-bottom:6px"><div class="fa-check">${check}</div><span class="fa-text" style="font-size:11px">${item.label}</span></div>`;
+    });
+    h+=`</div><div class="input-card"><label class="input-label">Outro tratamento (descreva)</label>
+      <input id="f-outro" class="input-field" type="text" placeholder="Ex: sutura, nebulização…" value="${S.d.outroTratamento||''}" onblur="salvarTexto('outroTratamento',this.value)"></div>`;
+    if(S.d.outroTratamento&&S.d.outroTratamento.trim().length>0) h+=`<div class="alert alert-red"><span class="alert-icon">🚨</span><span>Tratamento médico além de first aid → SAF ou CAF.</span></div>`;
+    const podeAv=marcados>0||(S.d.outroTratamento&&S.d.outroTratamento.trim().length>0);
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${podeAv?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 5: Desfechos ──────────────────────────────────────────────────
+  else if(s===5){
+    const pSN=(label,key,inv)=>{
+      const ss=S.d[key]==='sim',ns=S.d[key]==='nao';
+      const sc=inv?'nao':'sim',nc=inv?'sim':'nao';
+      const si=inv?'✅':'⚠️',ni=inv?'⚠️':'✅';
+      return `<div class="input-card"><label class="input-label">${label}</label><div class="yesno-row" style="margin-bottom:0">
+        <button class="yn-btn ${sc} ${ss?'selected':''}" onclick="setSN('${key}','sim')"><span class="yn-icon">${si}</span><span class="yn-label">Sim</span></button>
+        <button class="yn-btn ${nc} ${ns?'selected':''}" onclick="setSN('${key}','nao')"><span class="yn-icon">${ni}</span><span class="yn-label">Não</span></button>
+      </div></div>`;
+    };
+    h+=`<div class="section-eyebrow">Etapa 6 de 9 — Desfechos</div><div class="section-title">Desfechos do evento</div><div class="section-sub">Determine afastamento e eventos graves.</div>`;
+    h+=pSN('Óbito?','obito');
+    if(S.d.obito!=='sim'){
+      h+=pSN('Hospitalização como internado?','hospitalizacao');
+      h+=pSN('Amputação?','amputacao');
+      h+=pSN('Perda de olho?','perdaOlho');
+      h+=pSN('Perda de consciência?','perdaConsciencia');
+      h+=`<div class="input-card"><label class="input-label">Dias afastado do trabalho</label><input id="f-afast" class="input-field" type="number" min="0" placeholder="0" value="${S.d.diasAfastado}" onblur="salvarTexto('diasAfastado',this.value)"></div>
+      <div class="input-card"><label class="input-label">Dias em restrição / transferência</label><input id="f-rest" class="input-field" type="number" min="0" placeholder="0" value="${S.d.diasRestrito}" onblur="salvarTexto('diasRestrito',this.value)"></div>`;
+    }
+    const ok=S.d.obito!==null&&(S.d.obito==='sim'||(S.d.hospitalizacao!==null&&S.d.amputacao!==null&&S.d.perdaOlho!==null&&S.d.perdaConsciencia!==null));
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="avancar()" ${ok?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 6: Descrição ──────────────────────────────────────────────────
+  else if(s===6){
+    h+=`<div class="section-eyebrow">Etapa 7 de 9 — Descrição</div><div class="section-title">Descreva o evento</div><div class="section-sub">Obrigatório para Form 301 e CAT.</div>
+    <div class="input-card"><label class="input-label">Parte do corpo afetada</label>
+      <select class="input-field" onchange="setSelect('parteCorpo',this.value)"><option value="">Selecione…</option>
+      ${PARTES_CORPO.map(p=>`<option value="${p}" ${S.d.parteCorpo===p?'selected':''}>${p}</option>`).join('')}</select></div>
+    <div class="input-card"><label class="input-label">Causa / mecanismo</label>
+      <select class="input-field" onchange="setSelect('causa',this.value)"><option value="">Selecione…</option>
+      ${CAUSAS.map(c=>`<option value="${c}" ${S.d.causa===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="input-card"><label class="input-label">Agente causador (para CAT)</label>
+      <select class="input-field" onchange="setSelect('agenteCausador',this.value)"><option value="">Selecione…</option>
+      ${AGENTES.map(a=>`<option value="${a}" ${S.d.agenteCausador===a?'selected':''}>${a}</option>`).join('')}</select></div>
+    <div class="input-card"><label class="input-label">CID-10 (diagnóstico)</label>
+      <input id="f-cid" class="input-field" type="text" placeholder="Ex: S52.0 — fratura da ulna" value="${S.d.cid}" onblur="salvarTexto('cid',this.value)"></div>
+    <div class="input-card"><label class="input-label">Narrativa — o que aconteceu?</label>
+      <textarea id="f-desc" class="input-field" placeholder="Descreva o evento, o que o funcionário fazia e como ocorreu…" onblur="salvarTexto('descricao',this.value)">${S.d.descricao}</textarea></div>`;
+    const ok=S.d.parteCorpo&&S.d.causa;
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next" onclick="salvarDesc();avancar()" ${ok?'':'disabled'}>Continuar →</button></div>`;
+  }
+
+  // ── 7: BR — Tipo de acidente ──────────────────────────────────────
+  else if(s===7){
+    const oshaRes=classificarOSHA();
+    const workRel=oshaRes.tipo!=='clinico';
+    h+=`<div class="section-eyebrow" style="color:#0A84FF">🇧🇷 Etapa 8 de 9 — Legislação Brasileira</div>
+    <div class="section-title">Tipo de acidente (Brasil)</div>
+    <div class="section-sub">Classifica o evento conforme a Lei 8.213/91 e Decreto 3.048/99 para fins de CAT e eSocial.</div>`;
+    if(!workRel){
+      h+=`<div class="alert alert-br"><span class="alert-icon">ℹ️</span><span>Evento classificado como não work-related pela OSHA. CAT não é obrigatória — mas o médico pode abrir CAT facultativa se identificar nexo ocupacional.</span></div>`;
+      h+=`<div class="opt-btn selected-ok" style="border:2px solid #30D158;background:#F0FFF4;border-radius:14px;padding:14px;margin-bottom:8px;display:flex;gap:12px;align-items:center">
+        <div class="opt-icon-wrap" style="background:#E5FFE8">✅</div>
+        <div><span class="opt-label" style="color:#1A8C35">Prosseguir sem CAT obrigatória</span><span class="opt-desc">CAT facultativa a critério médico</span></div></div>`;
+      h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next br" onclick="setSN('tipoAcidenteBR','nao_obrig');avancar()">Ver resultado completo →</button></div>`;
+    } else {
+      [{id:'tipico',icon:'🏭',label:'Acidente típico',desc:'Ocorreu durante o exercício do trabalho, nas dependências ou a serviço da empresa'},
+       {id:'trajeto',icon:'🚗',label:'Acidente de trajeto',desc:'No percurso casa-trabalho ou trabalho-casa, independente do meio de transporte'},
+       {id:'doenca',icon:'🏥',label:'Doença ocupacional',desc:'Doença produzida ou desencadeada pelo exercício do trabalho (doenças profissionais ou do trabalho)'},
+       {id:'suspeita',icon:'🔍',label:'Suspeita de doença ocupacional',desc:'Ainda sem diagnóstico confirmado, mas com relação suspeita com o trabalho'},
+      ].forEach(o=>{
+        const sel=S.d.tipoAcidenteBR===o.id?'selected':'';
+        h+=`<button class="opt-btn ${sel}" onclick="setSN('tipoAcidenteBR','${o.id}')">
+          <div class="opt-icon-wrap">${o.icon}</div>
+          <div><span class="opt-label">${o.label}</span><span class="opt-desc">${o.desc}</span></div>
+          <span class="opt-check">✓</span></button>`;
+      });
+      h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next br" onclick="avancar()" ${S.d.tipoAcidenteBR?'':'disabled'}>Continuar →</button></div>`;
+    }
+  }
+
+  // ── 8: BR — CAT + eSocial orientação ─────────────────────────────
+  else if(s===8){
+    const oshaRes=classificarOSHA();
+    const brRes=classificarBR(oshaRes);
+    h+=`<div class="section-eyebrow" style="color:#0A84FF">🇧🇷 Etapa 9 de 9 — CAT + eSocial S-2210</div>
+    <div class="section-title">Obrigações brasileiras</div>
+    <div class="section-sub">Orientações de abertura baseadas na classificação do evento.</div>`;
+
+    // Status CAT
+    h+=`<div class="input-card" style="border:1px solid ${brRes.catObrig?'#FF3B30':brRes.catFacult?'#FF9F0A':'#30D158'}">
+      <div class="section-flag">
+        <span class="flag-pill flag-br">CAT — Lei 8.213/91</span>
+        <span class="br-badge ${brRes.catObrig?'obrig':brRes.catFacult?'facult':'nao'}">${brRes.catObrig?'OBRIGATÓRIA':brRes.catFacult?'FACULTATIVA':'NÃO OBRIGATÓRIA'}</span>
+      </div>
+      <div style="font-size:13px;color:#3A3A3C;margin-bottom:8px;line-height:1.5">${brRes.motivo}</div>
+      ${brRes.motivoFacult?`<div style="font-size:12px;color:#7A4A00;margin-bottom:8px;line-height:1.5">💡 ${brRes.motivoFacult}</div>`:''}
+      ${brRes.prazoCAT!=='—'?`<span class="br-badge prazo">⏱ Prazo: ${brRes.prazoCAT}</span>`:''}
+    </div>`;
+
+    // Status eSocial
+    h+=`<div class="input-card" style="border:1px solid ${brRes.eSocialObrig?'#FF3B30':'#30D158'}">
+      <div class="section-flag">
+        <span class="flag-pill flag-br">eSocial S-2210</span>
+        <span class="br-badge ${brRes.eSocialObrig?'obrig':'nao'}">${brRes.eSocialObrig?'OBRIGATÓRIO':'NÃO OBRIGATÓRIO'}</span>
+      </div>
+      ${brRes.eSocialObrig?`<span class="br-badge prazo">⏱ Prazo: ${brRes.prazoESocial}</span><div style="font-size:12px;color:#3A3A3C;margin-top:8px;line-height:1.5">O S-2210 e a CAT são obrigações <strong>paralelas e independentes</strong> — um não substitui o outro.</div>`:'<div style="font-size:12px;color:#8E8E93">Evento não qualifica como acidente de trabalho para fins previdenciários.</div>'}
+    </div>`;
+
+    // Ações
+    if(brRes.acoes.length>0){
+      h+=`<div class="summary-card"><div class="summary-title">Ações necessárias</div>`;
+      brRes.acoes.forEach(a=>{
+        const p=a.includes('imediata')||a.includes('sepultamento')?'pill-red':a.includes('dia')||a.includes('prazo')?'pill-br':'pill-amber';
+        h+=`<span class="action-pill ${p}">${a}</span>`;
+      });
+      h+=`</div>`;
+    }
+
+    // Campos orientados CAT
+    if(brRes.campos.length>0){
+      h+=`<div class="summary-card">
+        <div class="summary-title">Campos da CAT — orientação de preenchimento</div>`;
+      brRes.campos.forEach(c=>{
+        h+=`<div class="cat-field">
+          <span class="cat-field-label">${c.label}</span>
+          <div class="cat-field-val">${c.val||''}</div>
+          ${c.hint?`<div class="cat-field-hint">ℹ️ ${c.hint}</div>`:''}
+        </div>`;
+      });
+      h+=`</div>`;
+    }
+
+    // Links
+    h+=`<div class="summary-card">
+      <div class="summary-title">Links oficiais</div>
+      <a class="link-btn" href="https://cadastro-cat.inss.gov.br/CATInternet/faces/pages/index.xhtml" target="_blank">🔗 Abrir CAT — Sistema INSS</a>
+      <a class="link-btn secondary" href="https://www.gov.br/pt-br/servicos/registrar-comunicacao-de-acidente-de-trabalho-cat" target="_blank">🔗 CAT — Portal Gov.br</a>
+      <a class="link-btn secondary" href="https://esocial.gov.br" target="_blank">🔗 eSocial — Enviar S-2210</a>
+      <a class="link-btn secondary" href="https://www.planalto.gov.br/ccivil_03/leis/l8213cons.htm" target="_blank">📄 Lei 8.213/91 — texto completo</a>
+    </div>`;
+
+    // Afastamento > 15 dias
+    const diasAf=parseInt(S.d.diasAfastado)||0;
+    if(diasAf>15){
+      h+=`<div class="alert alert-br"><span class="alert-icon">ℹ️</span><span><strong>Afastamento > 15 dias:</strong> a partir do 16º dia o INSS assume o pagamento. Orientar trabalhador a agendar perícia médica do INSS. Benefício provável: <strong>B91</strong> (acidente do trabalho).</span></div>`;
+    }
+
+    h+=`</div><div class="nav-row"><button class="btn-back" onclick="voltar()">← Voltar</button><button class="btn-next br" onclick="avancar()">Ver resultado final →</button></div>`;
+  }
+
+  // ── 9: Resultado final ────────────────────────────────────────────
+  else if(s===9){
+    const oshaRes=classificarOSHA();
+    const brRes=classificarBR(oshaRes);
+    const diasAf=parseInt(S.d.diasAfastado)||0;
+    const diasRest=parseInt(S.d.diasRestrito)||0;
+    const tipoLabel=TIPOS_LESAO.find(t=>t.id===S.d.tipoLesao)?.label||'—';
+    const faAplicados=FA_ITEMS.filter(i=>S.d.fa[i.id]===true).map(i=>i.label);
+
+    // OSHA result
+    h+=`<div class="section-flag"><span class="flag-pill flag-osha">OSHA 300</span></div>
+    <div class="result-hero ${oshaRes.tipo}">
+      <span class="result-emoji">${oshaRes.emoji}</span>
+      <div class="result-class">Classificação OSHA</div>
+      <div class="result-badge">${oshaRes.label}</div>
+      <div class="result-sub">${oshaRes.sub}</div>
+    </div>`;
+
+    // BR result
+    h+=`<div class="section-flag" style="margin-top:4px"><span class="flag-pill flag-br">🇧🇷 Brasil</span></div>
+    <div class="br-hero">
+      <div style="font-size:13px;font-weight:700;color:#003A6B;margin-bottom:10px">CAT: <span class="br-badge ${brRes.catObrig?'obrig':brRes.catFacult?'facult':'nao'}">${brRes.catObrig?'OBRIGATÓRIA':brRes.catFacult?'FACULTATIVA':'NÃO OBRIGATÓRIA'}</span> &nbsp; eSocial S-2210: <span class="br-badge ${brRes.eSocialObrig?'obrig':'nao'}">${brRes.eSocialObrig?'OBRIGATÓRIO':'NÃO OBRIGATÓRIO'}</span></div>
+      ${brRes.prazoCAT!=='—'?`<div style="font-size:12px;color:#003A6B">⏱ CAT: ${brRes.prazoCAT} &nbsp;|&nbsp; S-2210: ${brRes.prazoESocial}</div>`:''}
+    </div>`;
+
+    h+=`<div class="justif-card"><div class="justif-title">Justificativa OSHA</div>`;
+    oshaRes.justificativa.forEach(j=>{h+=`<div class="justif-row"><span style="color:#FF9F0A;font-size:13px;flex-shrink:0">→</span><span class="justif-text">${j}</span></div>`;});
+    h+=`</div>`;
+
+    if(oshaRes.acoes.length>0){
+      h+=`<div class="summary-card"><div class="summary-title">Ações OSHA</div>`;
+      oshaRes.acoes.forEach(a=>{const p=a.includes('24h')||a.includes('8h')?'pill-red':a.includes('300')||a.includes('301')?'pill-amber':'pill-gray';h+=`<span class="action-pill ${p}">${a}</span>`;});
+      h+=`</div>`;
+    }
+
+    if(brRes.acoes.length>0){
+      h+=`<div class="summary-card"><div class="summary-title">Ações Brasil</div>`;
+      brRes.acoes.forEach(a=>{const p=a.includes('imediata')||a.includes('sepultamento')?'pill-red':a.includes('dia')||a.includes('S-2210')?'pill-br':'pill-amber';h+=`<span class="action-pill ${p}">${a}</span>`;});
+      h+=`</div>`;
+    }
+
+    h+=`<div class="summary-card">
+      <div class="summary-title">Resumo do caso</div>
+      <div class="summary-row"><span class="summary-label">Data</span><span class="summary-val">${S.d.data||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Funcionário</span><span class="summary-val">${S.d.funcionario||'Privacidade'}</span></div>
+      <div class="summary-row"><span class="summary-label">Setor</span><span class="summary-val">${S.d.setor||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Cargo</span><span class="summary-val">${S.d.cargo||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Tipo de lesão</span><span class="summary-val">${tipoLabel}</span></div>
+      <div class="summary-row"><span class="summary-label">Parte do corpo</span><span class="summary-val">${S.d.parteCorpo||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Causa</span><span class="summary-val">${S.d.causa||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">Agente causador</span><span class="summary-val">${S.d.agenteCausador||'—'}</span></div>
+      <div class="summary-row"><span class="summary-label">CID-10</span><span class="summary-val">${S.d.cid||'—'}</span></div>
+      ${diasAf>0?`<div class="summary-row"><span class="summary-label">Dias afastado</span><span class="summary-val">${diasAf}</span></div>`:''}
+      ${diasRest>0?`<div class="summary-row"><span class="summary-label">Dias em restrição</span><span class="summary-val">${diasRest}</span></div>`:''}
+      <div class="summary-row"><span class="summary-label">OSHA</span><span class="summary-val">${oshaRes.label}</span></div>
+      <div class="summary-row"><span class="summary-label">CAT</span><span class="summary-val">${brRes.catObrig?'Obrigatória':brRes.catFacult?'Facultativa':'Não obrigatória'}</span></div>
+      <div class="summary-row"><span class="summary-label">eSocial S-2210</span><span class="summary-val">${brRes.eSocialObrig?'Obrigatório':'Não obrigatório'}</span></div>
+    </div>`;
+
+    h+=`<div class="summary-card">
+      <div class="summary-title">Links rápidos</div>
+      <a class="link-btn" href="https://cadastro-cat.inss.gov.br/CATInternet/faces/pages/index.xhtml" target="_blank">🔗 Abrir CAT online — INSS</a>
+      <a class="link-btn secondary" href="https://esocial.gov.br" target="_blank">🔗 eSocial S-2210</a>
+    </div>`;
+
+    h+=`</div><div class="nav-row">
+      <button class="btn-reset" onclick="reiniciar()">🔄 Novo</button>
+      <button class="btn-export" onclick="exportarRelatorio()">Exportar</button>
+    </div><div style="height:20px"></div>`;
+  }
+
+  if(s<9) h+='</div>';
+  app.innerHTML=h;
+}
+
+function salvarEtapa0(){
+  S.d.data=document.getElementById('f-data')?.value||S.d.data;
+  S.d.funcionario=document.getElementById('f-func')?.value||S.d.funcionario;
+  S.d.matricula=document.getElementById('f-mat')?.value||S.d.matricula;
+  S.d.cargo=document.getElementById('f-cargo')?.value||S.d.cargo;
+  S.d.setor=document.getElementById('f-setor')?.value||S.d.setor;
+}
+function salvarDesc(){S.d.descricao=document.getElementById('f-desc')?.value||S.d.descricao;}
+
+function reiniciar(){
+  S.step=0;
+  S.d={data:'',funcionario:'',setor:'',cargo:'',matricula:'',
+    workRelated:null,soAlimentacao:null,novoCaso:null,tipoLesao:null,
+    obito:null,hospitalizacao:null,amputacao:null,perdaOlho:null,perdaConsciencia:null,
+    diasAfastado:'0',diasRestrito:'0',parteCorpo:'',causa:'',descricao:'',outroTratamento:'',
+    cid:'',agenteCausador:'',tipoAcidenteBR:null,clt:null,doencaPreexistente:null,
+    fa:{curativo:null,compress:null,calor_superf:null,oclusao:null,lavagem:null,
+        atadura:null,imobiliz:null,massagem:null,otc:null,fluor:null,ocular:null,
+        curativo_esp:null,oxigenio:null,evacuation:null,rxdiag:null,
+        aval_externo:null,aval_inhouse:null}};
+  render();
+}
+
+function exportarRelatorio(){
+  const oshaRes=classificarOSHA();
+  const brRes=classificarBR(oshaRes);
+  const d=S.d;
+  const diasAf=parseInt(d.diasAfastado)||0;
+  const diasRest=parseInt(d.diasRestrito)||0;
+  const tipoLabel=TIPOS_LESAO.find(t=>t.id===d.tipoLesao)?.label||'—';
+  const faAplicados=FA_ITEMS.filter(i=>d.fa[i.id]===true).map(i=>i.label);
+  const tipoAcBRLabel={tipico:'Acidente típico',trajeto:'Acidente de trajeto',doenca:'Doença ocupacional',suspeita:'Suspeita de doença ocupacional',nao_obrig:'Não aplicável'}[d.tipoAcidenteBR]||'—';
+
+  const txt=`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLASSIFICADOR DE ACIDENTES
+OSHA 300 + CAT + eSocial S-2210
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Data             : ${d.data||'—'}
+Funcionário      : ${d.funcionario||'Caso de privacidade'}
+Matrícula        : ${d.matricula||'—'}
+Setor / Área     : ${d.setor||'—'}
+Cargo            : ${d.cargo||'—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLASSIFICAÇÃO OSHA 300 : ${oshaRes.label.toUpperCase()}
+Tipo de lesão          : ${tipoLabel}
+Parte do corpo         : ${d.parteCorpo||'—'}
+Causa / mecanismo      : ${d.causa||'—'}
+Agente causador        : ${d.agenteCausador||'—'}
+CID-10                 : ${d.cid||'—'}
+Dias afastado          : ${diasAf}
+Dias em restrição      : ${diasRest}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+JUSTIFICATIVA OSHA
+${oshaRes.justificativa.map((j,i)=>`  ${i+1}. ${j}`).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LEGISLAÇÃO BRASILEIRA
+Tipo de acidente (BR) : ${tipoAcBRLabel}
+CAT                   : ${brRes.catObrig?'OBRIGATÓRIA':brRes.catFacult?'FACULTATIVA':'NÃO OBRIGATÓRIA'}
+Prazo CAT             : ${brRes.prazoCAT}
+eSocial S-2210        : ${brRes.eSocialObrig?'OBRIGATÓRIO':'NÃO OBRIGATÓRIO'}
+Prazo S-2210          : ${brRes.prazoESocial}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AÇÕES OSHA
+${oshaRes.acoes.map((a,i)=>`  ${i+1}. ${a}`).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AÇÕES BRASIL
+${brRes.acoes.map((a,i)=>`  ${i+1}. ${a}`).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRIMEIROS SOCORROS APLICADOS
+${faAplicados.length>0?faAplicados.map((f,i)=>`  ${i+1}. ${f}`).join('\n'):'  Nenhum'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NARRATIVA
+${d.descricao||'(sem descrição)'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Links:
+CAT   : https://cat.previdencia.gov.br
+S-2210: https://esocial.gov.br
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Classificado por : _______________________
+Data da revisão  : ${new Date().toLocaleDateString('pt-BR')}
+Assinatura       : _______________________
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  document.getElementById('modal-body').textContent=txt;
+  document.getElementById('modal').classList.add('show');
+}
+
+function fecharModal(){document.getElementById('modal').classList.remove('show');}
+function copiarRelatorio(){
+  const txt=document.getElementById('modal-body').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('.modal-btn.primary');
+    btn.textContent='✅ Copiado!';
+    setTimeout(()=>{btn.textContent='📋 Copiar para área de transferência';},2000);
+  });}
+}
+
+render();
+</script>
+</body>
+</html>
